@@ -1,0 +1,59 @@
+{
+  "nodes": {
+    "Sentry 1": {
+      "is_validator": "false",
+      "went_down_at": "1583754059",
+      "bonded_balance": "0",
+      "debonding_balance": "0",
+      "shares_balance" : "0",
+      "is_syncing": "True",
+      "no_of_peers": "25",
+      "active": "False",
+      "is_missing_blocks": "False",
+      "consecutive_blocks_missed": "0",
+      "time_of_last_height_check_activity": "-1",
+      "time_of_last_height_change": "1583854080",
+      "finalized_block_height": "456789",
+    },
+    "Sentry 2": {
+      "is_validator": "false",
+      "went_down_at": "None",
+      "bonded_balance": "0",
+      "debonding_balance": "0",
+      "shares_balance" : "0",
+      "is_syncing": "False",
+      "no_of_peers": "30",
+      "active": "False",
+      "is_missing_blocks": "False",
+      "time_of_last_height_check_activity": "-1",
+      "time_of_last_height_change": "-1",
+      "finalized_block_height": "556789",
+    },
+    "Validator": {
+      "is_validator": "true",
+      "went_down_at": "1583754059",
+      "bonded_balance": "5000",
+      "debonding_balance": "0",
+      "shares_balance" : "0",
+      "is_syncing": "true",
+      "no_of_peers": "120",
+      "active": "false",
+      "is_missing_blocks": "false",
+      "time_of_last_height_check_activity": "1583743890.798216",
+      "time_of_last_height_change": "1583917864",
+      "finalized_block_height": "496790",
+    }
+  },
+  "monitors": {
+    "node": {
+      "Sentry K1": {
+        "alive": "1583711420.521444",
+        "last_height_checked": "-1"
+      },
+      "Validator K1": {
+        "alive": "1583711466.798967",
+        "last_height_checked": "1372709"
+      }
+    }
+  }
+}
