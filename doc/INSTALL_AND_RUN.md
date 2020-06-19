@@ -209,7 +209,7 @@ docker-compose build ui
 
 The pre-built Docker image can simply be downloaded by running the following command:
 ```bash
-docker pull simplyvc/panic_oasis_ui:1.0.0
+docker pull simplyvc/panic_oasis_ui:1.0.1
 ```
 
 ##### Running the Docker Image
@@ -242,7 +242,7 @@ docker-compose build alerter
 
 The pre-built Docker image can simply be downloaded by running the following command:
 ```bash
-docker pull simplyvc/panic_oasis:1.0.0
+docker pull simplyvc/panic_oasis:1.0.1
 ```
 
 ##### Running the Docker Image

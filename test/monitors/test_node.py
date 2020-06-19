@@ -65,8 +65,8 @@ GET_TENDERMINT_ADDRESSS_FUNCTION = \
 GET_REGISTRY_NODES_FUNCTION = \
     'src.monitors.node.OasisApiWrapper.get_registry_node'
 
-GET_STAKING_ACCOUNT_INFO_FUNCTION = \
-    'src.monitors.node.OasisApiWrapper.get_staking_account_info'
+GET_STAKING_ACCOUNT_FUNCTION = \
+    'src.monitors.node.OasisApiWrapper.get_staking_account'
 
 GET_STAKING_DELEGATIONS_INFO_FUNCTION = \
     'src.monitors.node.OasisApiWrapper.get_staking_delegations'
@@ -100,12 +100,14 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
         self.full_node_api_url = '123.123.123.11:9944'
         self.full_node_consensus_key = "ANDSAdisadjasdaANDAsa"
         self.full_node_tendermint_key = "ASFLNAFIISDANNSDAKKS2313AA"
-        self.full_node_entity_public_key="a98dabsfkjabfkjabsf9j",
+        self.full_node_entity_public_key="a98dabsfkjabfkjabsf9j"
+        self.full_node_staking_address="asdsasdsdsaasdsdaswwad"
 
         self.full_node = Node(self.full_node_name, self.full_node_api_url,
                               NodeType.NON_VALIDATOR_FULL_NODE, '', self.chain,
                               None, True, self.full_node_consensus_key,
                               self.full_node_tendermint_key, 
+                              self.full_node_staking_address,
                               self.full_node_entity_public_key,
                               TestInternalConf)
 
@@ -120,13 +122,15 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
         self.validator_consensus_key = "KASDB01923udlakd19sad"
         self.validator_tendermint_key = "ALSFNF9)901jjelakNALKNDLKA"
         self.validator_node_public_key = "DFJGDF8G898fdghb98dg9wetg9we00w"
-        self.validator_node_entity_public_key="s12adsdghas9as0sa9dhnaskdlan",
+        self.validator_node_entity_public_key="s12adsdghas9as0sa9dhnaskdlan"
+        self.validator_node_staking_address="jujuujsmjmsjmaklzsdjsdnanz"
 
         self.validator = Node(self.validator_name, self.validator_api_url,
                               NodeType.VALIDATOR_FULL_NODE,
                               self.validator_node_public_key, self.chain,
                               None, True, self.validator_consensus_key,
-                              self.validator_tendermint_key, 
+                              self.validator_tendermint_key,
+                              self.validator_node_staking_address,
                               self.validator_node_entity_public_key,
                               TestInternalConf)
 
@@ -166,50 +170,57 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
         self.dummy_node_entity_public_key_1 = "entity_key_1"
         self.dummy_node_entity_public_key_2 = "entity_key_2"
         self.dummy_node_entity_public_key_3 = "entity_key_3"
+        self.dummy_node_staking_address_1 = "staking-key_1"
+        self.dummy_node_staking_address_2 = "staking_key_2"
+        self.dummy_node_staking_address_3 = "staking_key_3"
         self.dummy_full_node_1 = Node(name=self.dummy_node_name_1,
-                                      api_url=self.dummy_api_url_1,
-                                      node_type=NodeType.NON_VALIDATOR_FULL_NODE,
-                                      node_public_key='',
-                                      chain=self.chain, redis=None,
-                                      is_archive_node=True,
-                                      consensus_public_key='',
-                                      tendermint_address_key='',
-                                      entity_public_key='',
-                                      internal_conf=TestInternalConf)
+                                    api_url=self.dummy_api_url_1,
+                                    node_type=NodeType.NON_VALIDATOR_FULL_NODE,
+                                    node_public_key='',
+                                    chain=self.chain, redis=None,
+                                    is_archive_node=True,
+                                    consensus_public_key='',
+                                    tendermint_address_key='',
+                                    staking_address='',
+                                    entity_public_key='',
+                                    internal_conf=TestInternalConf)
         self.dummy_full_node_2 = Node(name=self.dummy_node_name_2,
-                                      api_url=self.dummy_api_url_2,
-                                      node_type=NodeType.NON_VALIDATOR_FULL_NODE,
-                                      node_public_key='',
-                                      chain=self.chain, redis=None,
-                                      is_archive_node=True,
-                                      consensus_public_key='',
-                                      tendermint_address_key='',
-                                      entity_public_key='',
-                                      internal_conf=TestInternalConf)
+                                    api_url=self.dummy_api_url_2,
+                                    node_type=NodeType.NON_VALIDATOR_FULL_NODE,
+                                    node_public_key='',
+                                    chain=self.chain, redis=None,
+                                    is_archive_node=True,
+                                    consensus_public_key='',
+                                    tendermint_address_key='',
+                                    staking_address='',
+                                    entity_public_key='',
+                                    internal_conf=TestInternalConf)
         self.dummy_full_node_3 = Node(name=self.dummy_node_name_3,
-                                      api_url=self.dummy_api_url_3,
-                                      node_type=NodeType.NON_VALIDATOR_FULL_NODE,
-                                      node_public_key='',
-                                      chain=self.chain, redis=None,
-                                      is_archive_node=True,
-                                      consensus_public_key='',
-                                      tendermint_address_key='',
-                                      entity_public_key='',
-                                      internal_conf=TestInternalConf)
+                                    api_url=self.dummy_api_url_3,
+                                    node_type=NodeType.NON_VALIDATOR_FULL_NODE,
+                                    node_public_key='',
+                                    chain=self.chain, redis=None,
+                                    is_archive_node=True,
+                                    consensus_public_key='',
+                                    tendermint_address_key='',
+                                    staking_address='',
+                                    entity_public_key='',
+                                    internal_conf=TestInternalConf)
         self.dummy_full_node_4 = Node(name=self.dummy_node_name_5,
-                                      api_url=self.dummy_api_url_5,
-                                      node_type=NodeType.NON_VALIDATOR_FULL_NODE,
-                                      node_public_key='',
-                                      chain=self.chain, redis=None,
-                                      is_archive_node=False,
-                                      consensus_public_key='',
-                                      tendermint_address_key='',
-                                      entity_public_key='',
-                                      internal_conf=TestInternalConf)
+                                    api_url=self.dummy_api_url_5,
+                                    node_type=NodeType.NON_VALIDATOR_FULL_NODE,
+                                    node_public_key='',
+                                    chain=self.chain, redis=None,
+                                    is_archive_node=False,
+                                    consensus_public_key='',
+                                    tendermint_address_key='',
+                                    staking_address='',
+                                    entity_public_key='',
+                                    internal_conf=TestInternalConf)
 
         self.dummy_take_event_owner = {"escrow" : {"take": 
             {"owner" : self.dummy_node_entity_public_key_1, 
-             "tokens": "2000000000"}}}
+            "tokens": "2000000000"}}}
 
         self.dummy_validator_node_1 = Node(
             name=self.dummy_node_name_4, api_url=self.dummy_api_url_4,
@@ -218,6 +229,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
             chain=self.chain, redis=None, is_archive_node=True,
             consensus_public_key=self.dummy_node_consensus_key_1,
             tendermint_address_key=self.dummy_node_tendermint_key_1,
+            staking_address=self.dummy_node_staking_address_1,
             entity_public_key=self.dummy_node_entity_public_key_1,
             internal_conf=TestInternalConf)
 
@@ -228,6 +240,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
             chain=self.chain, redis=None, is_archive_node=True,
             consensus_public_key=self.dummy_node_consensus_key_2,
             tendermint_address_key=self.dummy_node_tendermint_key_2,
+            staking_address=self.dummy_node_staking_address_2,
             entity_public_key=self.dummy_node_entity_public_key_2,
             internal_conf=TestInternalConf)
 
@@ -238,6 +251,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
             chain=self.chain, redis=None, is_archive_node=True,
             consensus_public_key=self.dummy_node_consensus_key_3,
             tendermint_address_key=self.dummy_node_tendermint_key_3,
+            staking_address=self.dummy_node_staking_address_3,
             entity_public_key=self.dummy_node_entity_public_key_3,
             internal_conf=TestInternalConf)
 
@@ -254,7 +268,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
             self.data_sources, TestInternalConf)
 
         self.assertEqual(test_monitor.indirect_monitoring_data_sources,
-                         self.data_sources)
+                        self.data_sources)
 
     def test_archive_monitoring_data_sources_field_set_correctly(self) -> None:
         self.data_sources = [
@@ -268,10 +282,10 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
             self.redis, self.validator, self.archive_alerts_disabled, 
             self.data_sources, TestInternalConf)
         expected_result = [self.dummy_full_node_1, self.dummy_full_node_2,
-                           self.dummy_full_node_3, self.dummy_validator_node_1]
+                        self.dummy_full_node_3, self.dummy_validator_node_1]
 
         self.assertEqual(test_monitor.archive_monitoring_data_sources,
-                         expected_result)
+                        expected_result)
 
     def test_is_catching_up_false_by_default(self) -> None:
         self.assertFalse(self.validator_monitor.is_catching_up())
@@ -544,7 +558,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
 
 
     @patch(GET_STAKING_EVENTS_BY_HEIGHT_FUNCTION, return_value=None)
-    @patch(GET_STAKING_ACCOUNT_INFO_FUNCTION, return_value={
+    @patch(GET_STAKING_ACCOUNT_FUNCTION, return_value={
         "escrow": {
             "active":{
                 "balance" : "9999999999993"
@@ -585,7 +599,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
             self.assertFalse(self.validator_monitor.data_wrapper.is_api_down)
 
     @patch(GET_STAKING_EVENTS_BY_HEIGHT_FUNCTION, return_value=None)
-    @patch(GET_STAKING_ACCOUNT_INFO_FUNCTION, return_value={
+    @patch(GET_STAKING_ACCOUNT_FUNCTION, return_value={
         "escrow": {
             "active":{
                 "balance" : "9999999999993"
@@ -640,7 +654,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
         }
     })
     @patch(GET_STAKING_EVENTS_BY_HEIGHT_FUNCTION, return_value=None)
-    @patch(GET_STAKING_ACCOUNT_INFO_FUNCTION, return_value={
+    @patch(GET_STAKING_ACCOUNT_FUNCTION, return_value={
         "escrow": {
             "active":{
                 "balance" : "9999999999993"

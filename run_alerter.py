@@ -92,6 +92,9 @@ def node_from_node_config(node_config: NodeConfig):
 
             entity_public_key = node_details['entity_id']
 
+            staking_address = oasis_api_data_wrapper.get_staking_address(
+                node_config.node_api_url, entity_public_key)
+
         except Exception as e:
             logger_general.error(e)
             raise InitialisationException(
@@ -99,7 +102,8 @@ def node_from_node_config(node_config: NodeConfig):
                     node_config.node_public_key))
     else:
         entity_public_key = 'empty'
-    
+        staking_address = 'empty'
+
     # Prometheus configuration should be checked on start up if Peers monitoring
     # is enabled.
     try:
@@ -136,7 +140,7 @@ def node_from_node_config(node_config: NodeConfig):
                 'Failed to retrieve Node Exporter Data from API of {}'.format(
                     node_config.node_name))
 
-     # Test connection and match-up chain name
+    # Test connection and match-up chain name
     log_and_print('Trying to convert the Node {} Key into a Consensus ' \
             'Public Key and a Tendermint Address key '.format(
         node_config.node_name))
@@ -168,8 +172,8 @@ def node_from_node_config(node_config: NodeConfig):
     # Initialise node and load any state
     node = Node(node_config.node_name, node_config.node_api_url, node_type,
                 node_config.node_public_key, chain_id, REDIS,
-                node_config.is_archive_node, consensus_public_key, 
-                tendermint_address_key, entity_public_key,
+                node_config.is_archive_node, consensus_public_key,
+                tendermint_address_key, staking_address, entity_public_key,
                 internal_conf=InternalConf)
     node.load_state(logger_general)
 

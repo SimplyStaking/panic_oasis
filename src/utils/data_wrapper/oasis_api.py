@@ -172,18 +172,25 @@ class OasisApiWrapper:
         params = {'name': node_name, 'nodeID': node_id}
         return get_oasis_json(endpoint, params, self._logger)
 
-    def get_staking_account_info(self, api_url: str, node_name: str,
-                                 owner_key: str) -> OasisWrapperType:
+    def get_staking_account(self, api_url: str, node_name: str,
+                                address: str) -> OasisWrapperType:
 
-        endpoint = api_url + '/api/staking/accountinfo'
-        params = {'name': node_name, 'ownerKey': owner_key}
+        endpoint = api_url + '/api/staking/account'
+        params = {'name': node_name, 'address': address}
+        return get_oasis_json(endpoint, params, self._logger)
+
+    def get_staking_address(self, api_url: str, public_key: \
+        str) -> OasisWrapperType:
+
+        endpoint = api_url + '/api/staking/publickeytoaddress'
+        params = {'pubKey': public_key}
         return get_oasis_json(endpoint, params, self._logger)
 
     def get_staking_delegations(self, api_url: str, node_name: str,
-                                 owner_key: str) -> OasisWrapperType:
+                                address: str) -> OasisWrapperType:
 
         endpoint = api_url + '/api/staking/delegations'
-        params = {'name': node_name, 'ownerKey': owner_key}
+        params = {'name': node_name, 'address': address}
         return get_oasis_json(endpoint, params, self._logger)
 
     def get_events_by_height(self, api_url: str, node_name: str,

@@ -76,22 +76,24 @@ class TestNodeWithoutRedis(unittest.TestCase):
         self.validator_entity_tokens = "200000000"
 
         self.full_node = Node(name=self.node_name, api_url=None,
-                              node_type=NodeType.NON_VALIDATOR_FULL_NODE,
-                              node_public_key='', chain='', redis=None,
-                              is_archive_node=True,
-                              consensus_public_key="USDKAJBD123hdas9dassodnaasd",
-                              tendermint_address_key="skojabdba991231dsqkslndad",
-                              entity_public_key=self.validator_entity_owner,
-                              internal_conf=TestInternalConf)
+                            node_type=NodeType.NON_VALIDATOR_FULL_NODE,
+                            node_public_key='', chain='', redis=None,
+                            is_archive_node=True,
+                            consensus_public_key="USDKAJBD123hdas9dassodnaasd",
+                            tendermint_address_key="skojabdba991231dsqkslndad",
+                            staking_address="ssdakjsjshja898a9sdhah002kasdasd",
+                            entity_public_key=self.validator_entity_owner,
+                            internal_conf=TestInternalConf)
 
         self.validator = Node(name=self.node_name, api_url=None,
-                              node_type=NodeType.VALIDATOR_FULL_NODE,
-                              node_public_key='', chain='', redis=None,
-                              is_archive_node=True,
-                              consensus_public_key="USDKAJBD123hdas9dasodnaasd",
-                              tendermint_address_key="skojabdba991231dsqkslnda",
-                              entity_public_key=self.validator_entity_owner,
-                              internal_conf=TestInternalConf)
+                            node_type=NodeType.VALIDATOR_FULL_NODE,
+                            node_public_key='', chain='', redis=None,
+                            is_archive_node=True,
+                            consensus_public_key="USDKAJBD123hdas9dasodnaasd",
+                            tendermint_address_key="skojabdba991231dsqkslnda",
+                            staking_address="ssdakjsjshja898a9sdhah002kasd",
+                            entity_public_key=self.validator_entity_owner,
+                            internal_conf=TestInternalConf)
 
         self.counter_channel = CounterChannel(self.logger)
         self.channel_set = ChannelSet([self.counter_channel], TestInternalConf)
@@ -2102,24 +2104,26 @@ class TestNodeWithRedis(unittest.TestCase):
             self.fail('Redis is not online.')
 
         self.non_validator = Node(name=self.node_name, api_url=None,
-                              node_type=NodeType.NON_VALIDATOR_FULL_NODE,
-                              node_public_key='',chain=self.chain, 
-                              redis=self.redis,
-                              is_archive_node=True,
-                              consensus_public_key="USDKAJBD123hdas9dasodnaasd",
-                              tendermint_address_key="skojabdba991231dsqkslndaknsd",
-                              entity_public_key="askdasssd188ssassalkdnalsdasss",
-                              internal_conf=TestInternalConf)
+                            node_type=NodeType.NON_VALIDATOR_FULL_NODE,
+                            node_public_key='',chain=self.chain, 
+                            redis=self.redis,
+                            is_archive_node=True,
+                            consensus_public_key="USDKAJBD123hdas9dasodnaasd",
+                            tendermint_address_key="skojabdba991231dsqkslndaknsd",
+                            staking_address="ssdakjsjshja898a9sdhah002kasd",
+                            entity_public_key="askdasssd188ssassalkdnalsdasss",
+                            internal_conf=TestInternalConf)
 
         self.validator = Node(name=self.node_name, api_url=None,
-                              node_type=NodeType.VALIDATOR_FULL_NODE,
-                              node_public_key='', chain=self.chain,
-                              redis=self.redis,
-                              is_archive_node=True,
-                              consensus_public_key="USDKAJBD123hdas9dasodnaasd",
-                              tendermint_address_key="skojabdba991231dsqkslndaknsd",
-                              entity_public_key="askdasssd188ssassalkdnalsdasss",
-                              internal_conf=TestInternalConf)
+                            node_type=NodeType.VALIDATOR_FULL_NODE,
+                            node_public_key='', chain=self.chain,
+                            redis=self.redis,
+                            is_archive_node=True,
+                            consensus_public_key="USDKAJBD123hdas9dasodnaasd",
+                            tendermint_address_key="skojabdba991231dsqkslndaknsd",
+                            staking_address="ssdakjsjshja898a9sdhah002kasd",
+                            entity_public_key="askdasssd188ssassalkdnalsdasss",
+                            internal_conf=TestInternalConf)
 
 
     def test_load_state_changes_nothing_if_nothing_saved(self):
@@ -2134,7 +2138,7 @@ class TestNodeWithRedis(unittest.TestCase):
         self.assertIsNone(self.validator.no_of_peers)
         self.assertIsNone(self.validator.is_active)
         self.assertEqual(self.validator._time_of_last_height_check_activity,
-                         NONE)
+                        NONE)
         self.assertIsNotNone(self.validator._time_of_last_height_change)
         self.assertEqual(self.validator.finalized_block_height, 0)
         self.assertFalse(self.validator.is_no_change_in_height_warning_sent)

@@ -17,7 +17,7 @@ from src.utils.timing import TimedTaskLimiter
 
 
 def start_node_monitor(node_monitor: NodeMonitor, monitor_period: int,
-                       logger: logging.Logger):
+                    logger: logging.Logger):
 
     # Start
     while True:

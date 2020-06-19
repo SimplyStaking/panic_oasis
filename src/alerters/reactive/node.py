@@ -24,11 +24,11 @@ class NodeType(Enum):
 
 class Node:
     def __init__(self, name: str, api_url: Optional[str], node_type: NodeType,
-                 node_public_key: Optional[str], chain: str,
-                 redis: Optional[RedisApi], is_archive_node: bool,
-                 consensus_public_key: str, tendermint_address_key: str,
-                 entity_public_key: str,
-                 internal_conf: InternalConfig = InternalConf) -> None:
+                node_public_key: Optional[str], chain: str,
+                redis: Optional[RedisApi], is_archive_node: bool,
+                consensus_public_key: str, tendermint_address_key: str,
+                staking_address: str, entity_public_key: str,
+                internal_conf: InternalConfig = InternalConf) -> None:
         super().__init__()
 
         self.name = name
@@ -38,6 +38,7 @@ class Node:
         self._chain = chain
         self._consensus_public_key = consensus_public_key
         self._tendermint_address_key = tendermint_address_key
+        self._staking_address = staking_address
         self._entity_public_key = entity_public_key
         self._redis = redis
         self._redis_enabled = redis is not None
@@ -155,6 +156,10 @@ class Node:
     def node_public_key(self) -> str:
         return self._node_public_key
 
+    @property
+    def staking_address(self) -> str:
+        return self._staking_address
+        
     @property
     def api_url(self) -> str:
         return self._api_url
@@ -344,7 +349,7 @@ class Node:
     def set_as_down(self, channels: ChannelSet, logger: logging.Logger) -> None:
 
         logger.debug('%s set_as_down: is_down(currently)=%s, channels=%s',
-                     self, self.is_down, channels)
+                    self, self.is_down, channels)
 
         # Alert (varies depending on whether was already down)
         if self.is_down and not self._initial_downtime_alert_sent:
@@ -357,7 +362,7 @@ class Node:
         elif self.is_down and self._downtime_alert_limiter.can_do_task():
             went_down_at = datetime.fromtimestamp(self._went_down_at)
             downtime = strfdelta(datetime.now() - went_down_at,
-                                 "{hours}h, {minutes}m, {seconds}s")
+                                "{hours}h, {minutes}m, {seconds}s")
             if self.is_validator:
                 channels.alert_critical(StillCannotAccessNodeAlert(
                     self.name, went_down_at, downtime))
@@ -382,7 +387,7 @@ class Node:
             if self._initial_downtime_alert_sent:
                 went_down_at = datetime.fromtimestamp(self._went_down_at)
                 downtime = strfdelta(datetime.now() - went_down_at,
-                                     "{hours}h, {minutes}m, {seconds}s")
+                                    "{hours}h, {minutes}m, {seconds}s")
                 channels.alert_info(NowAccessibleAlert(
                     self.name, went_down_at, downtime))
 

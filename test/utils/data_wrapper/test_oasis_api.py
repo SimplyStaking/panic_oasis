@@ -178,7 +178,7 @@ class TestOasisApi(unittest.TestCase):
         mock.side_effect = api_mock_generator(endpoint, self.params, api_call)
 
         self.assertTrue(self.wrapper.get_registry_node(self.api_endpoint, \
-             self.node_name, self.acc_addr))
+            self.node_name, self.acc_addr))
 
     @patch(GET_OASIS_JSON_FUNCTION)
     def test_ping_node(self, mock):
@@ -191,22 +191,22 @@ class TestOasisApi(unittest.TestCase):
             self.node_name))
     
     @patch(GET_OASIS_JSON_FUNCTION)
-    def test_get_staking_account_info(self, mock):
+    def test_get_staking_account(self, mock):
         # Set up mock
-        endpoint = self.api_endpoint + '/api/staking/accountinfo'
+        endpoint = self.api_endpoint + '/api/staking/account'
         api_call = ''
-        self.params = {'name': self.node_name, 'ownerKey': self.acc_addr}
+        self.params = {'name': self.node_name, 'address': self.acc_addr}
         mock.side_effect = api_mock_generator(endpoint, self.params, api_call)
-        self.assertTrue(self.wrapper.get_staking_account_info(self.api_endpoint,
+        self.assertTrue(self.wrapper.get_staking_account(self.api_endpoint,
             self.node_name, self.acc_addr))
 
-    def test_set_api_as_down_produces_error_alert_if_api_not_down_for_val_monitors(
+    def test_set_api_as_down_produces_warning_alert_if_api_not_down_for_val_monitors(
             self) -> None:
         self.counter_channel.reset()
         self.wrapper.set_api_as_down("", True, self.channel_set)
-        self.assertEqual(1, self.counter_channel.error_count)
+        self.assertEqual(1, self.counter_channel.warning_count)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              ApiIsDownAlert)
+                            ApiIsDownAlert)
 
     def test_set_api_as_down_produces_no_error_alert_if_api_down_for_val_monitors(
             self) -> None:
@@ -215,11 +215,11 @@ class TestOasisApi(unittest.TestCase):
         self.wrapper.set_api_as_down("", True, self.channel_set)
         self.assertEqual(0, self.counter_channel.error_count)
 
-    def test_set_api_as_down_produces_error_alert_if_api_not_down_for_non_val_monitors(
+    def test_set_api_as_down_produces_warning_alert_if_api_not_down_for_non_val_monitors(
             self) -> None:
         self.counter_channel.reset()
         self.wrapper.set_api_as_down("", False, self.channel_set)
-        self.assertEqual(1, self.counter_channel.error_count)
+        self.assertEqual(1, self.counter_channel.warning_count)
         self.assertIsInstance(self.counter_channel.latest_alert,
                               ApiIsDownAlert)
 
@@ -260,7 +260,7 @@ class TestOasisApi(unittest.TestCase):
         self.wrapper.set_api_as_down("", False, self.channel_set)
         self.assertTrue(self.wrapper.is_api_down)
 
-    def test_set_api_as_down_raises_critical_alert_for_val_monitors_if_enough_time_passed_for_first_time(
+    def test_set_api_as_down_raises_warning_alert_for_val_monitors_if_enough_time_passed_for_first_time(
             self) -> None:
         # To perform did task
         self.wrapper.set_api_as_up("", self.channel_set)
@@ -268,9 +268,9 @@ class TestOasisApi(unittest.TestCase):
         sleep(self.max_time_more)
         self.wrapper.set_api_as_down("", True, self.channel_set)
 
-        self.assertEqual(1, self.counter_channel.critical_count)
+        self.assertEqual(1, self.counter_channel.warning_count)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              ApiIsDownAlert)
+                            ApiIsDownAlert)
 
     def test_set_api_as_down_raises_no_critical_alert_for_val_monitors_if_enough_time_passed_for_second_time(
             self) -> None:

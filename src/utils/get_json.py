@@ -22,7 +22,7 @@ def get_json(endpoint: str, logger: logging.Logger, params=None):
 
 
 def get_oasis_json(endpoint: str, params: Dict, logger: logging.Logger,
-                      api_call: str = ''):
+                   api_call: str = ''):
     data = get_json(endpoint, logger, params)
     if 'result' in data:
         return data['result']

@@ -1,8 +1,15 @@
 # Change Log
 
+## 1.0.1
+
+Released on 19th June 2020
+
+Small updates to fix breaking changes with Oasis v20.8 release
+
+
 ## 1.0.0
 
-Released on 10th June 2020
+Released on 13th May 2020
 
 This release of PANIC for Oasis satisfies Milestone 1 of the Oasis Labs grant.
 

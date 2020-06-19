@@ -1,0 +1,9 @@
+./config
+./logs
+./src/web/ui/node_modules
+./src/web/ui/build
+
+.idea/
+.vscode/
+
+__pycache__/

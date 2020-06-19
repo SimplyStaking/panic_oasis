@@ -172,7 +172,7 @@ class NodeMonitor(Monitor):
 
         # Get isSyncing Status
         is_syncing = not self.data_wrapper.get_is_syncing(self._node.api_url,
-                                                      self._node.name)
+                                                        self._node.name)
         self._logger.debug('%s is syncing: %s', self._node, is_syncing)
         self._node.set_is_syncing(is_syncing, self.channels, self.logger)
 
@@ -181,7 +181,7 @@ class NodeMonitor(Monitor):
         self._node.name, "tendermint_p2p_peers")
         self._logger.debug('%s no. of peers: %s', self._node, no_of_peers)
         self._node.set_no_of_peers(int(float(no_of_peers)), self.channels,
-                                   self.logger)
+                                    self.logger)
 
         # Update finalized block height
         finalized_block_header = self.data_wrapper.get_block_header(
@@ -192,7 +192,7 @@ class NodeMonitor(Monitor):
             str(finalized_block_header['height']))
 
         self._logger.debug('%s finalized_block_height: %s', self._node,
-                           finalized_block_height)
+                            finalized_block_height)
 
         self._node.update_finalized_block_height(finalized_block_height,
                                                  self.logger, self.channels)
@@ -259,7 +259,7 @@ class NodeMonitor(Monitor):
 
         self._logger.debug('%s voting power: %s', self.node, voting_power)
         self.node.set_voting_power(int(voting_power), self.channels,
-                                   self.logger)
+                                    self.logger)
 
         # Get node status and from that the last height to be checked
         latestblock = self.data_wrapper.get_consensus_block(
@@ -296,9 +296,9 @@ class NodeMonitor(Monitor):
             self._monitor_is_catching_up = False
 
         # Retrieve the bonding balance and set it
-        staking_account = self.data_wrapper.get_staking_account_info(
+        staking_account = self.data_wrapper.get_staking_account(
             self.data_source_indirect.api_url, self.data_source_indirect.name,
-            self._node.node_public_key)
+            self._node.staking_address)
 
         bonded_balance = parse_int_from_string(
             str(staking_account['escrow']['active']['balance']))
@@ -316,7 +316,7 @@ class NodeMonitor(Monitor):
         # Staking Delegations for self Entity ID
         staking_delegations = self.data_wrapper.get_staking_delegations(
             self.data_source_indirect.api_url, self.data_source_indirect.name,
-            self._node.entity_public_key
+            self._node.staking_address
         )
 
         shares = 0

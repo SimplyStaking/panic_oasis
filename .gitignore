@@ -1,0 +1,31 @@
+.idea/
+.vscode/
+
+__pycache__/
+
+logs/*.log*
+logs/*/*.log*
+!logs/alerts/.gitkeep
+!logs/general/.gitkeep
+
+config/user_config_main.ini
+config/user_config_nodes.ini
+config/user_config_repos.ini
+
+.coverage
+htmlcov
+
+# dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# production
+build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
