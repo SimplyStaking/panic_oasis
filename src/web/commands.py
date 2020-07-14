@@ -2,22 +2,22 @@ import logging
 from typing import Optional, Dict, List
 
 from src.alerters.reactive.node import Node
+from src.store.mongo.mongo_api import MongoApi
+from src.store.redis.redis_api import RedisApi
 from src.utils.config_parsers.internal import InternalConfig
 from src.utils.config_parsers.internal_parsed import InternalConf
 from src.utils.config_parsers.user import UserConfig
 from src.utils.config_parsers.user_parsed import UserConf
-from src.store.redis.redis_api import RedisApi
-from src.store.mongo.mongo_api import MongoApi
 
 
 class Commands:
 
     def __init__(self, logger: logging.Logger, redis: Optional[RedisApi],
-                mongo: Optional[MongoApi],
-                node_monitor_nodes_by_chain: Dict[str, List[Node]],
-                archive_alerts_disabled_by_chain: Dict[str, bool],
-                internal_conf: InternalConfig = InternalConf,
-                user_conf: UserConfig = UserConf) -> None:
+                 mongo: Optional[MongoApi],
+                 node_monitor_nodes_by_chain: Dict[str, List[Node]],
+                 archive_alerts_disabled_by_chain: Dict[str, bool],
+                 internal_conf: InternalConfig = InternalConf,
+                 user_conf: UserConfig = UserConf) -> None:
         self._logger = logger
 
         self._redis = redis

@@ -221,7 +221,6 @@ function MongoForm({
         <div>
           <Form.Control
             type="password"
-            placeholder=""
             disabled={
               (!toBool(mainUserConfigJson.mongo.enabled))
               || (fieldEmpty(mainUserConfigJson.mongo.user))

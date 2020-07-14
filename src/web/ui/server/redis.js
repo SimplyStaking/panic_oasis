@@ -30,6 +30,22 @@ const getKeysNodeMonitor = () => ({
   last_height_checked: 'nm2',
 });
 
+// sX_<chain_name>
+const getKeysSystem = () => ({
+  process_cpu_seconds_total: 's1',
+  process_memory_usage: 's2',
+  virtual_memory_usage: 's3',
+  open_file_descriptors: 's4',
+  system_cpu_usage: 's5',
+  system_ram_usage: 's6',
+  system_storage_usage: 's7',
+});
+
+// smX_<monitor_name>
+const getKeysSystemMonitor = () => ({
+  alive: 'sm1',
+});
+
 module.exports = {
   getRedisClient: (host, port, password) => {
     const redisClient = redis.createClient({
@@ -92,4 +108,6 @@ module.exports = {
   getHashes,
   getKeysNode,
   getKeysNodeMonitor,
+  getKeysSystem,
+  getKeysSystemMonitor,
 };

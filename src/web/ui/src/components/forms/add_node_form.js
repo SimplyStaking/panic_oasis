@@ -20,7 +20,7 @@ import '../../style/style.css';
 function AddNodeForm({
   handleAddNode, handleChangeInNonBooleanField, handleChangeInBooleanField,
   currentNodeConfig, currentNodeIndex, validated, nodeNameValid, chainNameValid,
-  nodeAPIUrlValid, nodePubKeyValid,
+  nodeAPIUrlValid, nodePubKeyValid, nodeExporterUrlValid,
 }) {
   const labels = [
     createFormLabel(true, '3', 'Name'),
@@ -31,7 +31,7 @@ function AddNodeForm({
     createFormLabel(true, '3', 'Monitor node'),
     createFormLabel(true, '3', 'Use as data source'),
     createFormLabel(true, '3', 'Is archive'),
-    createFormLabel(true, '3', 'Has Node Exporter'),
+    createFormLabel(true, '3', 'Node Exporter URL'),
   ];
   const inputFields = [
     [
@@ -303,35 +303,37 @@ function AddNodeForm({
       </div>,
       12,
     ),
-    createColumnWithContent(
-      '2',
-      <div>
-        <div style={{ display: 'inline-block' }}>
-          <Form.Check
-            type="checkbox"
-            id="has-node-exporter-check-box"
-            aria-label="checkbox"
-            className="checkbox-style"
+    [
+      createColumnWithContent(
+        '5',
+        <div>
+          <Form.Control
+            type="text"
             onChange={
-              event => handleChangeInBooleanField(event, 'node_has_exporter')
+              event => handleChangeInNonBooleanField(event, 'node_exporter_url')
             }
-            checked={toBool(currentNodeConfig.node_has_exporter)}
+            placeholder="http://111.02.32.132:9100/metrics"
+            value={currentNodeConfig.node_exporter_url}
+            isInvalid={validated && !nodeExporterUrlValid()}
+            isValid={validated && nodeExporterUrlValid()}
           />
-        </div>
-        <div
-          className="info-tooltip-div-style2"
-          style={{ display: 'inline-block' }}
-        >
+          <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+        </div>,
+        13,
+      ),
+      createColumnWithContent(
+        '1',
+        <div className="info-tooltip-div-style">
           <TooltipOverlay
-            identifier="has-node-exporter"
+            identifier="node_exporter_url"
             placement="right"
-            tooltipText="Tick if your node has Node Exporter installed."
+            tooltipText="This will be used to monitor the system metrics."
             component={<FontAwesomeIcon icon={faInfoCircle} />}
           />
-        </div>
-      </div>,
-      13,
-    ),
+        </div>,
+        14,
+      ),
+    ],
   ];
   return (
     <div className="div-style">
@@ -374,6 +376,7 @@ AddNodeForm.propTypes = forbidExtraProps({
   chainNameValid: PropTypes.func.isRequired,
   nodeAPIUrlValid: PropTypes.func.isRequired,
   nodePubKeyValid: PropTypes.func.isRequired,
+  nodeExporterUrlValid: PropTypes.func.isRequired,
 });
 
 export default AddNodeForm;

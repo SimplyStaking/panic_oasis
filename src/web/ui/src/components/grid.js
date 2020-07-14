@@ -4,10 +4,13 @@ import Row from 'react-bootstrap/Row';
 import { forbidExtraProps } from 'airbnb-prop-types';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { createActiveNodeStats } from '../utils/dashboard';
+import {
+  createActiveNodeStats, createActiveSystemStats,
+} from '../utils/dashboard';
 import DataCard from './cards';
-import {NODE_TYPE } from '../utils/constants';
+import { NODE_TYPE, SYSTEM_TYPE } from '../utils/constants';
 import TooltipOverlay from './overlays';
+import { scaleFromBytes } from '../utils/scaling';
 import '../style/style.css';
 
 function SingleRowMultipleColumnsGrid({
@@ -20,6 +23,79 @@ function SingleRowMultipleColumnsGrid({
   return <div className="grid-container-style"><Row md>{columns}</Row></div>;
 }
 
+function SystemDataGrid({ system }) {
+  const activeSystemStats = createActiveSystemStats(system);
+  const cards = [
+    <DataCard
+      title="Process CPU Seconds Total"
+      data={activeSystemStats.processCPUSecondsTotal}
+      key="process-cpu-seconds-total-card"
+    />,
+    <DataCard
+      title="Process Memory Usage"
+      data={
+        activeSystemStats.processMemoryUsage === 'N/a'
+          ? activeSystemStats.processMemoryUsage
+          : `${activeSystemStats.processMemoryUsage}%`
+      }
+      key="process-memory-usage-card"
+    />,
+    <DataCard
+      title="Process Virtual Memory Usage"
+      data={
+        activeSystemStats.virtualMemoryUsage === 'N/a'
+          ? activeSystemStats.virtualMemoryUsage
+          : scaleFromBytes(activeSystemStats.virtualMemoryUsage)
+      }
+      key="process-virtual-memory-usage-card"
+    />,
+    <DataCard
+      title="Open File Descriptors"
+      data={
+        activeSystemStats.openFileDescriptors === 'N/a'
+          ? activeSystemStats.openFileDescriptors
+          : `${activeSystemStats.openFileDescriptors}%`
+      }
+      key="open-file-descriptors-card"
+    />,
+    <DataCard
+      title="System CPU Usage"
+      data={
+        activeSystemStats.systemCPUUsage === 'N/a'
+          ? activeSystemStats.systemCPUUsage
+          : `${activeSystemStats.systemCPUUsage}%`
+      }
+      key="system-cpu-usage-card"
+    />,
+    <DataCard
+      title="System RAM Usage"
+      data={
+        activeSystemStats.systemRAMUsage === 'N/a'
+          ? activeSystemStats.systemRAMUsage
+          : `${activeSystemStats.systemRAMUsage}%`
+      }
+      key="system-ram-usage-card"
+    />,
+    <DataCard
+      title="System Storage Usage"
+      data={
+        activeSystemStats.systemStorageUsage === 'N/a'
+          ? activeSystemStats.systemStorageUsage
+          : `${activeSystemStats.systemStorageUsage}%`
+      }
+      key="system-storage-usage-card"
+    />,
+  ];
+  return (
+    <SingleRowMultipleColumnsGrid
+      content={cards}
+      xs={12}
+      sm={6}
+      md={4}
+      lg={4}
+    />
+  );
+}
 
 function NodeDataGrid({ node }) {
   const activeNodeStats = createActiveNodeStats(node);
@@ -122,11 +198,23 @@ function NodeDataGrid({ node }) {
     );
   }
 
-  return <SingleRowMultipleColumnsGrid content={cards} xs={6} sm={6} md={4} lg={4} />;
+  return (
+    <SingleRowMultipleColumnsGrid
+      content={cards}
+      xs={12}
+      sm={6}
+      md={4}
+      lg={4}
+    />
+  );
 }
 
 NodeDataGrid.propTypes = forbidExtraProps({
   node: NODE_TYPE.isRequired,
+});
+
+SystemDataGrid.propTypes = forbidExtraProps({
+  system: SYSTEM_TYPE.isRequired,
 });
 
 SingleRowMultipleColumnsGrid.propTypes = forbidExtraProps({
@@ -139,4 +227,4 @@ SingleRowMultipleColumnsGrid.propTypes = forbidExtraProps({
   md: PropTypes.number.isRequired,
 });
 
-export { SingleRowMultipleColumnsGrid, NodeDataGrid };
+export { SingleRowMultipleColumnsGrid, NodeDataGrid, SystemDataGrid };

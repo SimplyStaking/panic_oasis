@@ -5,9 +5,11 @@ services:
     build:
       context: './'
       dockerfile: './src/web/ui/Dockerfile'
-    image: 'simplyvc/panic_oasis_ui:1.0.1'
+    image: 'simplyvc/panic_oasis_ui:2.0.0'
     volumes:
       - './config:/opt/panic_oasis/config'
+      - './src/web/ui/sessions:/opt/panic_oasis/src/web/ui/sessions'
+
     ports:
       - '${UI_HOST_PORT}:9000'
     restart: always
@@ -26,7 +28,7 @@ services:
 
   alerter:
     build: .
-    image: 'simplyvc/panic_oasis:1.0.1'
+    image: 'simplyvc/panic_oasis:2.0.0'
     volumes:
       - './config:/opt/panic_oasis/config'
       - './logs:/opt/panic_oasis/logs'

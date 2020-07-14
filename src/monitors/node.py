@@ -1,12 +1,14 @@
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, List
+
 import dateutil
 
 from src.alerters.reactive.node import Node
 from src.alerts.alerts import FoundLiveArchiveNodeAgainAlert
 from src.channels.channel import ChannelSet
 from src.monitors.monitor import Monitor
+from src.store.redis.redis_api import RedisApi
 from src.store.store_keys import Keys
 from src.utils.config_parsers.internal import InternalConfig
 from src.utils.config_parsers.internal_parsed import InternalConf
@@ -15,7 +17,6 @@ from src.utils.exceptions import \
     NoLiveNodeConnectedWithAnApiServerException, \
     NoLiveArchiveNodeConnectedWithAnApiServerException
 from src.utils.parsing import parse_int_from_string
-from src.store.redis.redis_api import RedisApi
 from src.utils.types import NONE
 
 
@@ -154,11 +155,12 @@ class NodeMonitor(Monitor):
             self.redis.set_for(
                 key_alive, str(datetime.now().timestamp()), until
             )
+
     def status(self) -> str:
 
         if self._node.is_validator:
             return self._node.status() + \
-                ', last_height_checked={}' \
+                   ', last_height_checked={}' \
                        .format(self._last_height_checked)
         else:
             return self._node.status()
@@ -172,16 +174,17 @@ class NodeMonitor(Monitor):
 
         # Get isSyncing Status
         is_syncing = not self.data_wrapper.get_is_syncing(self._node.api_url,
-                                                        self._node.name)
+                                                          self._node.name)
         self._logger.debug('%s is syncing: %s', self._node, is_syncing)
         self._node.set_is_syncing(is_syncing, self.channels, self.logger)
 
         # Set number of peers
         no_of_peers = self.data_wrapper.get_prometheus_gauge(self._node.api_url,
-        self._node.name, "tendermint_p2p_peers")
+                                                             self._node.name,
+                                                             "tendermint_p2p_peers")
         self._logger.debug('%s no. of peers: %s', self._node, no_of_peers)
         self._node.set_no_of_peers(int(float(no_of_peers)), self.channels,
-                                    self.logger)
+                                   self.logger)
 
         # Update finalized block height
         finalized_block_header = self.data_wrapper.get_block_header(
@@ -192,7 +195,7 @@ class NodeMonitor(Monitor):
             str(finalized_block_header['height']))
 
         self._logger.debug('%s finalized_block_height: %s', self._node,
-                            finalized_block_height)
+                           finalized_block_height)
 
         self._node.update_finalized_block_height(finalized_block_height,
                                                  self.logger, self.channels)
@@ -207,7 +210,7 @@ class NodeMonitor(Monitor):
         # last_height_to_check < finalized_block_height
         archive_node = self.data_source_archive
         last_height_to_check = archive_node.finalized_block_height
-        
+
         if self._last_height_checked == NONE:
             self._last_height_checked = last_height_to_check - 1
 
@@ -220,7 +223,7 @@ class NodeMonitor(Monitor):
         elif last_height_to_check - self._last_height_checked > \
                 self._node_monitor_max_catch_up_blocks:
             height_to_check = last_height_to_check - \
-                self._node_monitor_max_catch_up_blocks
+                              self._node_monitor_max_catch_up_blocks
             self._check_events(height_to_check, archive_node)
             self._last_height_checked = height_to_check
         elif height_to_check <= last_height_to_check:
@@ -254,12 +257,12 @@ class NodeMonitor(Monitor):
         self._logger.debug('%s active: %s', self._node, is_active)
         self.node.set_active(is_active, self.channels, self.logger)
 
-        voting_power = 0 if is_active == False  \
+        voting_power = 0 if is_active == False \
             else validator_data[0]['voting_power']
 
         self._logger.debug('%s voting power: %s', self.node, voting_power)
         self.node.set_voting_power(int(voting_power), self.channels,
-                                    self.logger)
+                                   self.logger)
 
         # Get node status and from that the last height to be checked
         latestblock = self.data_wrapper.get_consensus_block(
@@ -281,7 +284,7 @@ class NodeMonitor(Monitor):
         if last_height_to_check - self._last_height_checked > \
                 self._node_monitor_max_catch_up_blocks:
             height = last_height_to_check - \
-                self._node_monitor_max_catch_up_blocks
+                     self._node_monitor_max_catch_up_blocks
             self._check_block(height)
             self._check_events(height, None)
             self._last_height_checked = height
@@ -331,7 +334,6 @@ class NodeMonitor(Monitor):
             self._monitor_archive_state()
 
         self._last_height_checked += 1
-        
 
     def _monitor_indirect_full_node(self) -> None:
         # These are not needed for full nodes, and thus must be given a
@@ -392,7 +394,7 @@ class NodeMonitor(Monitor):
                 str(height))
 
         if events != None:
-            self._logger.debug('Events found at block height : '+str(height))
+            self._logger.debug('Events found at block height : ' + str(height))
             # Iterate through the list of events
             for event in events:
                 # Call method based on whether block missed or not
@@ -434,7 +436,7 @@ class NodeMonitor(Monitor):
         # Call method based on whether block missed or not
         for v in self._indirect_monitoring_data_sources:
             if v.is_validator and v.tendermint_address_key not in \
-                block_precommits_validators:
+                    block_precommits_validators:
                 block_time = block_header['time']
                 v.add_missed_block(
                     height - 1,  # '- 1' since it's actually previous height

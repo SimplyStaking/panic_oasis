@@ -6,7 +6,7 @@ PANIC for [Oasis](https://oasisprotocol.org/) is a lightweight yet powerful open
 
 The alerter's focus on a modular design means that it is beginner friendly but also developer friendly. It allows the user to decide which components of the alerter to set up while making it easy for developers to add new features. PANIC also offers two levels of configurability, _user_ and _internal_, allowing more experienced users to fine-tune the alerter to their preference.
 
-We are sure that PANIC will be beneficial for node operators in the Oasis community and we look forward for feedback. Feel free to read on if you are interested in the design of the alerter, if you wish to try it out, or if you would like to support and contribute to this open source project, or just check out upcoming features.
+We are sure that PANIC will be beneficial for node operators in the Oasis community and we look forward for [feedback](https://forms.gle/6HDfpmxRmpSVca7HA). Feel free to read on if you are interested in the design of the alerter, if you wish to try it out, or if you would like to support and contribute to this open source project.
 
 ## Design and Features
 

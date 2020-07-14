@@ -44,7 +44,8 @@ function GitHubReposTableContent({ reposConfigJson, handleRemoveRepo }) {
         {generateAddedTableValues(data.monitor_repo, true)}
         <td>
           <RemoveButton
-            itemKey={parseInt(repo.substr(repo.length - 1), 10)}
+            itemKey={parseInt(repo.substr(repo.indexOf('_') + 1, repo.length),
+              10)}
             handleRemove={handleRemoveRepo}
           />
         </td>
@@ -134,6 +135,11 @@ class ReposSettingsPage extends Component {
   componentDidMount() {
     this.fetchReposConfig();
     this.dataTimer = setInterval(this.fetchReposConfig.bind(this), 5000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.dataTimer);
+    this.dataTimer = null;
   }
 
   async fetchReposConfig() {

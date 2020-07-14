@@ -64,14 +64,14 @@ const ALERTS_CONFIG_ALERT_NAMES = {
   TimedMissedBlocksAlert: 'Validator is missing blocks after some time',
   NoLongerMissingBlocksAlert: 'Validator is no longer missing blocks',
   SlashedAlert: 'Validator slashed',
-  TokensBurnedAlert :'Validator tokens burned',
+  TokensBurnedAlert: 'Validator tokens burned',
   TokensTransferedToAlert: 'Tokens have been transfered to',
   TokensTransferedFromAlert: 'Tokens have been transfered from',
   EscrowAddEventSelfOwner: 'Escrow add event when self is owner',
   EscrowAddEventSelfEscrow: 'Escrow add event when self is escrow',
   EscrowReclaimEventSelfOwner: 'Escrow reclaim event when self is owner',
   EscrowReclaimEventSelfEscrow: 'Escrow reclaim event when self is escrow',
-  UnknownEventFound:'Unknown event has been found',
+  UnknownEventFound: 'Unknown event has been found',
   NodeFinalizedBlockHeightDidNotChangeInAlert: 'Finalized height not updating',
   NodeFinalizedBlockHeightHasNowBeenUpdatedAlert: 'Finalized height updated',
   ProblemWhenDialingNumberAlert: 'Problem when dialing number',
@@ -94,9 +94,10 @@ const ALERTS_CONFIG_ALERT_NAMES = {
 
 const MONITOR_TYPES = {
   node_monitor: 'Node monitor',
+  system_monitor: 'System monitor',
 };
 
-const NAVBAR_ITEMS = {
+const NAVBAR_NAV_ITEMS = {
   Dashboard: '/',
   Alerts: {
     Logs: '/alerts/logs',
@@ -157,6 +158,18 @@ const NODE_TYPE = PropTypes.shape({
   consecutiveBlocksMissed: PropTypes.number,
 });
 
+const SYSTEM_TYPE = PropTypes.shape({
+  name: PropTypes.string,
+  chain: PropTypes.string,
+  processCPUSecondsTotal: PropTypes.number,
+  processMemoryUsage: PropTypes.number,
+  virtualMemoryUsage: PropTypes.number,
+  openFileDescriptors: PropTypes.number,
+  systemCPUUsage: PropTypes.number,
+  systemRAMUsage: PropTypes.number,
+  systemStorageUsage: PropTypes.number,
+});
+
 const MONITOR_TYPE = PropTypes.shape({
   name: PropTypes.string,
   chain: PropTypes.string,
@@ -167,6 +180,6 @@ const NANO = 10 ** -9;
 
 export {
   ALERTS_CONFIG_SECTION_NAMES, ALERTS_CONFIG_ALERT_NAMES, MONITOR_TYPES,
-  NANO, NAVBAR_ITEMS, SEVERITY_COLOUR_REPRESENTATION, NODE_CONFIG_TYPE,
-  ALERT_TYPE, REPO_CONFIG_TYPE, NODE_TYPE, MONITOR_TYPE,
+  NANO, NAVBAR_NAV_ITEMS, SEVERITY_COLOUR_REPRESENTATION, NODE_CONFIG_TYPE,
+  ALERT_TYPE, REPO_CONFIG_TYPE, NODE_TYPE, SYSTEM_TYPE, MONITOR_TYPE,
 };

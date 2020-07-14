@@ -4,11 +4,11 @@ from typing import Optional
 from src.alerts.alerts import NewGitHubReleaseAlert
 from src.channels.channel import ChannelSet
 from src.monitors.monitor import Monitor
+from src.store.redis.redis_api import RedisApi
 from src.store.store_keys import Keys
 from src.utils.config_parsers.internal import InternalConfig
 from src.utils.config_parsers.internal_parsed import InternalConf
 from src.utils.get_json import get_json
-from src.store.redis.redis_api import RedisApi
 
 
 class GitHubMonitor(Monitor):

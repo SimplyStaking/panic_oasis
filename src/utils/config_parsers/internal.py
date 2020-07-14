@@ -1,6 +1,7 @@
-import configparser
 import sys
 from datetime import timedelta
+
+import configparser
 
 from src.alerts.alerts import AlertCode, SeverityCode
 from src.utils.config_parsers.config_parser import ConfigParser
@@ -36,8 +37,8 @@ class InternalConfig(ConfigParser):
             'github_monitor_general_log_file_template']
         self.node_monitor_general_log_file_template = section[
             'node_monitor_general_log_file_template']
-        self.blockchain_monitor_general_log_file_template = section[
-            'blockchain_monitor_general_log_file_template']
+        self.system_monitor_general_log_file_template = section[
+            'system_monitor_general_log_file_template']
 
         self.alerts_log_file = section['alerts_log_file']
         self.redis_log_file = section['redis_log_file']
@@ -68,19 +69,19 @@ class InternalConfig(ConfigParser):
             section['redis_node_monitor_alive_key_timeout'])
         self.redis_node_monitor_last_height_key_timeout = int(
             section['redis_node_monitor_last_height_key_timeout'])
-        self.redis_blockchain_monitor_alive_key_timeout = int(
-            section['redis_blockchain_monitor_alive_key_timeout'])
+        self.redis_system_monitor_alive_key_timeout = int(
+            section['redis_system_monitor_alive_key_timeout'])
 
         # [monitoring_periods]
         section = cp['monitoring_periods']
         self.node_monitor_period_seconds = int(
             section['node_monitor_period_seconds'])
 
+        self.system_monitor_period_seconds = int(
+            section['system_monitor_period_seconds'])
+
         self.node_monitor_max_catch_up_blocks = int(
             section['node_monitor_max_catch_up_blocks'])
-
-        self.blockchain_monitor_period_seconds = int(
-            section['blockchain_monitor_period_seconds'])
 
         self.github_monitor_period_seconds = int(
             section['github_monitor_period_seconds'])
@@ -129,6 +130,49 @@ class InternalConfig(ConfigParser):
             section['missed_blocks_danger_boundary'])
 
         self._check_if_block_height_warning_and_interval_are_valid()
+
+        section = cp['system_intervals_and_limits']
+        self.validator_process_memory_usage_danger_boundary = int(
+            section['validator_process_memory_usage_danger_boundary'])
+        self.validator_process_memory_usage_safe_boundary = int(
+            section['validator_process_memory_usage_safe_boundary'])
+        self.validator_open_file_descriptors_danger_boundary = int(
+            section['validator_open_file_descriptors_danger_boundary'])
+        self.validator_open_file_descriptors_safe_boundary = int(
+            section['validator_open_file_descriptors_safe_boundary'])
+        self.validator_system_cpu_usage_danger_boundary = int(
+            section['validator_system_cpu_usage_danger_boundary'])
+        self.validator_system_cpu_usage_safe_boundary = int(
+            section['validator_system_cpu_usage_safe_boundary'])
+        self.validator_system_ram_usage_danger_boundary = int(
+            section['validator_system_ram_usage_danger_boundary'])
+        self.validator_system_ram_usage_safe_boundary = int(
+            section['validator_system_ram_usage_safe_boundary'])
+        self.validator_system_storage_usage_danger_boundary = int(
+            section['validator_system_storage_usage_danger_boundary'])
+        self.validator_system_storage_usage_safe_boundary = int(
+            section['validator_system_storage_usage_safe_boundary'])
+
+        self.node_process_memory_usage_danger_boundary = int(
+            section['node_process_memory_usage_danger_boundary'])
+        self.node_process_memory_usage_safe_boundary = int(
+            section['node_process_memory_usage_safe_boundary'])
+        self.node_open_file_descriptors_danger_boundary = int(
+            section['node_open_file_descriptors_danger_boundary'])
+        self.node_open_file_descriptors_safe_boundary = int(
+            section['node_open_file_descriptors_safe_boundary'])
+        self.node_system_cpu_usage_danger_boundary = int(
+            section['node_system_cpu_usage_danger_boundary'])
+        self.node_system_cpu_usage_safe_boundary = int(
+            section['node_system_cpu_usage_safe_boundary'])
+        self.node_system_ram_usage_danger_boundary = int(
+            section['node_system_ram_usage_danger_boundary'])
+        self.node_system_ram_usage_safe_boundary = int(
+            section['node_system_ram_usage_safe_boundary'])
+        self.node_system_storage_usage_danger_boundary = int(
+            section['node_system_storage_usage_danger_boundary'])
+        self.node_system_storage_usage_safe_boundary = int(
+            section['node_system_storage_usage_safe_boundary'])
 
         # [links]
         section = cp['links']
@@ -181,7 +225,7 @@ class InternalConfig(ConfigParser):
     # correct execution
     def _peer_safe_and_danger_boundaries_are_valid(self) -> bool:
         return self.validator_peer_safe_boundary > \
-            self.validator_peer_danger_boundary > 0
+               self.validator_peer_danger_boundary > 0
 
     def _check_if_peer_safe_and_danger_boundaries_are_valid(self):
         if not self._peer_safe_and_danger_boundaries_are_valid():
@@ -196,7 +240,7 @@ class InternalConfig(ConfigParser):
     # correct execution
     def _block_height_warning_and_interval_values_valid(self) -> bool:
         return self.no_change_in_height_interval_seconds > \
-            self.no_change_in_height_first_warning_seconds > 0
+               self.no_change_in_height_first_warning_seconds > 0
 
     def _check_if_block_height_warning_and_interval_are_valid(self):
         if not self._block_height_warning_and_interval_values_valid():

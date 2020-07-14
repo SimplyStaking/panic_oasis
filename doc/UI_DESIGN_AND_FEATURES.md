@@ -10,11 +10,11 @@ The design is responsive, meaning the Web UI can be viewed from any device.
 
 The components at play when using the Web UI are the following:
 - **Web UI**: The front-end which the **node operator** uses to set up PANIC, visualize alerts, and monitor the state of nodes and chains together with the alerter itself.
-- **Web UI Backend**: A Node.js server used by the **Web UI** to retrieve data from the PANIC store so that it can be visualized in the front-end, and to send data to the PANIC store so that PANIC can be (re-)configured.
-- **PANIC Store**: **Redis**, **MongoDB** and the **Configs**. These store the current state of the alerter/nodes, the alerts and the PANIC setup respectively.
+- **Web UI Backend**: A Node.js HTTPS server used to retrieve data from the PANIC store so that it can be visualized in the front-end, and to send data to the PANIC store so that PANIC can be (re-)configured.
+- **PANIC Store**: **Redis**, **MongoDB** and the **Configs**. These store the current state of the alerter/nodes, the alerts, and the PANIC setup respectively.
 - **Node operator**: The user making use of the **Web UI**.
 
-The above components can be visualised as follows, along with the remaining components of PANIC (when it is running) represented as **Other Components**:
+The interaction between the components above and the remaining components of PANIC (when it is running) represented as **Other Components**, can be visualized as follows:
 
 <img src="./images/IMG_UI_DESIGN.png" alt="UI Design"/>
 
@@ -28,12 +28,13 @@ The Web UI is a clean and easy-to-navigate interface. It consists of a number of
 
 ### Dashboard Page
 
-The aim of the dashboard is to show the current state of the nodes, chains and monitors using data stored in Redis. It detects which chains/nodes are being monitored by PANIC using the `user_config_nodes.ini` file. Therefore, the user must first setup PANIC as described [here](./SETUP.md) to create the config files, and then must make sure that PANIC is (re-)started manually.
+The aim of the dashboard is to show the current state of the nodes and monitors using data stored in Redis. It detects which nodes are being monitored by PANIC using the `user_config_nodes.ini` file.
 
 The dashboard groups nodes and monitors according to the chain they belong to. This means that one can choose which chain they want to view dynamically.
 
 For each chain, a number of sections with different types of data are shown in the dashboard. These are the:
 - [Nodes Overview section](#nodes-overview-section), shows node related data stored in Redis by PANIC.
+- [System Overview section](#systems-overview-section), shows system related data stored in Redis by PANIC.
 - [Monitors Status section](#monitors-status-section), show monitors related data stored in Redis by PANIC.
 
 #### Nodes Overview Section
@@ -90,10 +91,59 @@ For **validator nodes**, the same data as non-validator nodes is shown together 
 - The voting power of the validator.
 - The shares balance.
 
+#### Systems Overview Section
+
+The Systems Overview section shows the state of the systems belonging to the selected nodes. This section is divided into two, the Systems Overview Table and the More Details section.
+
+**Note**: This section can be disabled for some specific node `N`. This can be done by setting the field `node_exporter_url` to blank for every `N` node in the `user_config_nodes.ini` config.
+
+
+##### Systems Overview Table
+
+The aim of the Systems Overview Table is to give a quick summary of the status of the systems belonging to the selected node. As a result, the user can recognize undesired behaviours at a glance.
+
+For each **system** belonging to the selected node, the following badges are shown if the conditions are met:
+
+| **Badge** | **Condition** |
+|---|---|
+| <img src="./images/badges/IMG_PROCESS_MEMORY_USAGE_GREEN.png" alt="Active badge"/> | Shown if the percentage **Process Memory Usage** of the system is below the safe boundary |
+| <img src="./images/badges/IMG_PROCESS_MEMORY_USAGE_YELLOW.png" alt="Active badge"/> | Shown if the percentage **Process Memory Usage** of the system is above the safe boundary but below danger boundary|
+| <img src="./images/badges/IMG_PROCESS_MEMORY_USAGE_RED.png" alt="Active badge"/> | Shown if the percentage **Process Memory Usage** of the system is above the danger boundary |
+| <img src="./images/badges/IMG_OPEN_FILE_DESCRIPTORS_GREEN.png" alt="Active badge"/> | Shown if the percentage **Open File Descriptors** of the system is below the safe boundary |
+| <img src="./images/badges/IMG_OPEN_FILE_DESCRIPTORS_YELLOW.png" alt="Active badge"/> | Shown if the percentage **Open File Descriptors** of the system is above the safe boundary but below danger boundary|
+| <img src="./images/badges/IMG_OPEN_FILE_DESCRIPTORS_RED.png" alt="Active badge"/> | Shown if the percentage **Open File Descriptors** of the system is above the danger boundary |
+| <img src="./images/badges/IMG_SYSTEM_CPU_USAGE_GREEN.png" alt="Active badge"/> | Shown if the percentage **System CPU Usage** of the system is below the safe boundary |
+| <img src="./images/badges/IMG_SYSTEM_CPU_USAGE_YELLOW.png" alt="Active badge"/> | Shown if the percentage **System CPU Usage** of the system is above the safe boundary but below danger boundary|
+| <img src="./images/badges/IMG_SYSTEM_CPU_USAGE_RED.png" alt="Active badge"/> | Shown if the percentage **System CPU Usage** of the system is above the danger boundary |
+| <img src="./images/badges/IMG_SYSTEM_RAM_USAGE_GREEN.png" alt="Active badge"/> | Shown if the percentage **System RAM Usage** of the system is below the safe boundary |
+| <img src="./images/badges/IMG_SYSTEM_RAM_USAGE_YELLOW.png" alt="Active badge"/> | Shown if the percentage **System RAM Usage** of the system is above the safe boundary but below danger boundary|
+| <img src="./images/badges/IMG_SYSTEM_RAM_USAGE_RED.png" alt="Active badge"/> | Shown if the percentage **System RAM Usage** of the system is above the danger boundary |
+| <img src="./images/badges/IMG_SYSTEM_STORAGE_USAGE_GREEN.png" alt="Active badge"/> | Shown if the percentage **System Storage Usage** of the system is below the safe boundary |
+| <img src="./images/badges/IMG_SYSTEM_STORAGE_USAGE_YELLOW.png" alt="Active badge"/> | Shown if the percentage **System Storage Usage** of the system is above the safe boundary but below danger boundary|
+| <img src="./images/badges/IMG_SYSTEM_STORAGE_USAGE_RED.png" alt="Active badge"/> | Shown if the percentage **System Storage Usage** of the system is above the danger boundary |
+
+The badge colours follow these rules:
+- Green: Nothing to worry about, these badges inform the user that the system is behaving as expected.
+- Yellow: Warning! These badges may signal an incoming severe state.
+- Red: Danger! These badges are shown when the node is in a severe state.
+
+##### More Details Section
+
+The aim of the More Details section is to complement the data shown in the Systems Overview Table.
+
+For each **system** the following is shown:
+- The Process CPU Seconds total of the system.
+- The percentage of Process Memory Usage of the system.
+- The Virtual Memory Usage of the system in GB.
+- The percentage of Open File Descriptors of the system.
+- The percentage of System CPU Usage of the system.
+- The percentage of System RAM Usage of the system.
+- The percentage of System Storage usage of the system.
+
 #### Monitors Status Section
 
 The Monitors Status section shows the state of the PANIC monitors belonging to the selected chain. More specifically, the following is shown for each monitor:
-- The type (for now only node).
+- The type (node or system).
 - The amount of time passed since the last update from the monitor.
     - On hover, the exact date & time of the last monitor update is given.
 
@@ -120,19 +170,19 @@ The aim of the Settings Pages is to provide an easy setup for PANIC. In the curr
 - **Nodes Settings Page**, used to add new nodes for monitoring. Generates the `user_config_nodes.ini` config.
 - **Repos Settings Page**, used to add new repos for monitoring. Generates the `user_config_repos.ini` config.
 
-The settings pages were developed keeping user friendliness in mind. In fact, in all pages, *testing buttons* together with *validation mechanisms* are provided so that the user can be sure that correct data is being inputted. In addition to this, information is provided for each input field along with example data so that the user knows what data should be inputted.
+The Settings Pages were developed keeping user friendliness in mind. In fact, in all pages, *testing buttons* together with *validation mechanisms* are provided so that the user can be sure that correct data is being inputted. In addition to this, information is provided for each input field along with example data so that the user knows what data should be inputted.
 
-A feature of the settings pages is that they are able to load data in the page from the corresponding config if it exists already. This helps the user visualize the latest PANIC configuration and adjust accordingly if need be.
+A feature of the Settings pages is that they are able to load data in the page from the corresponding config if it exists already. This helps the user visualize the latest PANIC configuration and adjust accordingly if need be.
 
 Another important thing worth mentioning is that the alerter is not able to detect changes in the config files, therefore, whenever the alerter is (re-)configured, the user must make sure that PANIC is (re-)started.
 
-For a detailed read on how to set-up PANIC using the settings pages please [read this guide](./SETUP.md#using-the-web-ui)
+For a detailed read on how to set-up the alerter using the settings pages please [read this guide](./SETUP_ALERTER.md#using-the-web-ui)
 
 ### Preferences Page
 
-The Preferences Page is used for alert fine-tuning. The user can use the preferences page to switch on/off (blue/grey toggle) specific alerts or alert severities. As a result, the Preferences Page gives more fine-grained power over the alerts that PANIC emits.  
+The Preferences Page is used for alert fine-tuning. The user can use the Preferences Page to switch on/off specific alerts or alert severities. As a result, the Preferences Page gives more fine-grained power over the alerts that PANIC emits. 
 
-Similarly to the settings pages, the Preferences Page generates the `internal_config_alerts.ini` config. The page is also able to detect the current configuration in the `internal_config_alerts.ini` config. However, the alerter is not able to detect changes in the `internal_config_alert.ini` config, and therefore the alerter must be (re-)started whenever this config is updated.
+Similarly to the Settings pages, the Preferences Page generates the `internal_config_alerts.ini` config. The page is also able to detect the current configuration in the `internal_config_alerts.ini` config. However, the alerter is not able to detect changes in the `internal_config_alert.ini` config, and therefore the alerter must be (re-)started whenever this config is updated.
 
 ---
 [Back to main design page](./DESIGN_AND_FEATURES.md)

@@ -76,6 +76,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         self.validator_entity_tokens = "200000000"
 
         self.full_node = Node(name=self.node_name, api_url=None,
+                            prometheus_endpoint=None,
                             node_type=NodeType.NON_VALIDATOR_FULL_NODE,
                             node_public_key='', chain='', redis=None,
                             is_archive_node=True,
@@ -86,6 +87,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
                             internal_conf=TestInternalConf)
 
         self.validator = Node(name=self.node_name, api_url=None,
+                            prometheus_endpoint=None,
                             node_type=NodeType.VALIDATOR_FULL_NODE,
                             node_public_key='', chain='', redis=None,
                             is_archive_node=True,
@@ -130,68 +132,68 @@ class TestNodeWithoutRedis(unittest.TestCase):
         # Dummy Events for testing of process_event function
         self.dummy_take_event_owner = {"escrow" : {"take": 
             {"owner" : self.validator_entity_owner, 
-             "tokens": self.validator_entity_tokens}}}
+            "tokens": self.validator_entity_tokens}}}
         
         self.dummy_take_event_not_owner = {"escrow" : {"take": 
             {"owner" : self.validator_entity_other, 
-             "tokens": self.validator_entity_tokens}}}
+            "tokens": self.validator_entity_tokens}}}
         
         self.dummy_burn_event_owner = {"burn" : 
             {"owner" : self.validator_entity_owner,
-             "tokens": self.validator_entity_tokens}}
+            "tokens": self.validator_entity_tokens}}
 
         self.dummy_burn_event_not_owner = {"burn" : 
             {"owner" : self.validator_entity_other,
-             "tokens": self.validator_entity_tokens}}
+            "tokens": self.validator_entity_tokens}}
 
         self.dummy_transfer_event_from_owner = {"transfer" : 
             {"from": self.validator_entity_owner,
-             "to": self.validator_entity_other,
-             "tokens": self.validator_entity_tokens}}
+            "to": self.validator_entity_other,
+            "tokens": self.validator_entity_tokens}}
         
         self.dummy_transfer_event_to_owner = {"transfer" : 
             {"from": self.validator_entity_other,
-             "to": self.validator_entity_owner,
-             "tokens": self.validator_entity_tokens}}
+            "to": self.validator_entity_owner,
+            "tokens": self.validator_entity_tokens}}
         
         self.dummy_transfer_event_not_owner = {"transfer" : 
             {"from": self.validator_entity_other,
-             "to": self.validator_entity_other,
-             "tokens": self.validator_entity_tokens}}
+            "to": self.validator_entity_other,
+            "tokens": self.validator_entity_tokens}}
 
         self.dummy_reclaim_event_owner_is_not_escrow = {"escrow" : {"reclaim": 
             {"owner" : self.validator_entity_owner,
-             "escrow" : self.validator_entity_other,
-             "tokens" : self.validator_entity_tokens}}}
+            "escrow" : self.validator_entity_other,
+            "tokens" : self.validator_entity_tokens}}}
         
         self.dummy_reclaim_event_owner_is_escrow = {"escrow" : {"reclaim": 
             {"owner" : self.validator_entity_other,
-             "escrow" : self.validator_entity_owner,
-             "tokens" : self.validator_entity_tokens}}}
+            "escrow" : self.validator_entity_owner,
+            "tokens" : self.validator_entity_tokens}}}
 
         self.dummy_reclaim_event_owner_is_neither = {"escrow" : {"reclaim": 
             {"owner" : self.validator_entity_other,
-             "escrow" : self.validator_entity_other,
-             "tokens" : self.validator_entity_tokens}}}
+            "escrow" : self.validator_entity_other,
+            "tokens" : self.validator_entity_tokens}}}
 
         self.dummy_add_event_owner_is_not_escrow = {"escrow" : {"add": 
             {"owner" : self.validator_entity_owner,
-             "escrow" : self.validator_entity_other,
-             "tokens": self.validator_entity_tokens}}}
+            "escrow" : self.validator_entity_other,
+            "tokens": self.validator_entity_tokens}}}
         
         self.dummy_add_event_owner_is_escrow = {"escrow" : {"add": 
             {"owner" : self.validator_entity_other,
-             "escrow" : self.validator_entity_owner,
-             "tokens": self.validator_entity_tokens}}}
+            "escrow" : self.validator_entity_owner,
+            "tokens": self.validator_entity_tokens}}}
 
         self.dummy_add_event_owner_is_neither = {"escrow" : {"add": 
             {"owner" : self.validator_entity_other,
-             "escrow" : self.validator_entity_other,
-             "tokens": self.validator_entity_tokens}}}
+            "escrow" : self.validator_entity_other,
+            "tokens": self.validator_entity_tokens}}}
         
         self.dummy_unknown_event = {"Uknown" : {"take": 
             {"owner" : self.validator_entity_owner, 
-             "tokens" : self.validator_entity_tokens}}}
+            "tokens" : self.validator_entity_tokens}}}
 
 
     def test_voting_power_is_none_by_default(self) -> None:
@@ -255,11 +257,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
 
         self.assertEqual(
             self.validator.status(), "bonded_balance={}, debonding_balance={},"\
-                                     " shares_balance={}, "\
-                                     "is_syncing=False, " \
-                                     "no_of_peers={}, active={}, " \
-                                     "finalized_block_height={}, " \
-                                     "is_missing_blocks=False".format(
+                                    " shares_balance={}, "\
+                                    "is_syncing=False, " \
+                                    "no_of_peers={}, active={}, " \
+                                    "finalized_block_height={}, " \
+                                    "is_missing_blocks=False".format(
                 self.dummy_bonded_balance,
                 self.dummy_debonding_balance,
                 self.dummy_shares_balance,
@@ -274,7 +276,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         self.assertFalse(self.validator._initial_downtime_alert_sent)
         self.assertTrue(self.validator.is_down)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              ExperiencingDelaysAlert)
+                            ExperiencingDelaysAlert)
 
     def test_second_set_as_down_sends_critical_cannot_access_node_alert_if_validator(
             self) -> None:
@@ -286,7 +288,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         self.assertTrue(self.validator.is_down)
         self.assertTrue(self.validator._initial_downtime_alert_sent)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              CannotAccessNodeAlert)
+                            CannotAccessNodeAlert)
 
     def test_second_set_as_down_sends_warning_cannot_access_node_alert_if_non_validator(
             self) -> None:
@@ -298,7 +300,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         self.assertTrue(self.full_node._initial_downtime_alert_sent)
         self.assertTrue(self.full_node.is_down)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              CannotAccessNodeAlert)
+                            CannotAccessNodeAlert)
 
     def test_third_set_as_down_does_nothing_if_within_time_interval_for_validator(
             self) -> None:
@@ -332,7 +334,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         self.assertTrue(self.validator.is_down)
         self.assertTrue(self.validator._initial_downtime_alert_sent)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              StillCannotAccessNodeAlert)
+                            StillCannotAccessNodeAlert)
 
     def test_third_set_as_down_sends_warning_alert_if_after_time_interval_for_non_validator(
             self) -> None:
@@ -346,7 +348,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         self.assertTrue(self.full_node.is_down)
         self.assertTrue(self.full_node._initial_downtime_alert_sent)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              StillCannotAccessNodeAlert)
+                            StillCannotAccessNodeAlert)
 
     def test_set_as_up_does_nothing_if_not_down(self) -> None:
         self.validator.set_as_up(self.channel_set, self.logger)
@@ -372,7 +374,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertFalse(self.validator.is_down)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              NowAccessibleAlert)
+                            NowAccessibleAlert)
 
     def test_set_as_up_resets_alert_time_interval(self) -> None:
         self.validator.set_as_down(self.channel_set, self.logger)
@@ -385,7 +387,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertTrue(self.validator.is_down)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              ExperiencingDelaysAlert)
+                            ExperiencingDelaysAlert)
 
     def test_set_bonded_balance_raises_no_alerts_first_time_round(self) -> None:
         self.validator.set_bonded_balance(self.dummy_bonded_balance,
@@ -393,97 +395,97 @@ class TestNodeWithoutRedis(unittest.TestCase):
 
         self.assertTrue(self.counter_channel.no_alerts())
         self.assertEqual(self.validator.bonded_balance,
-                         self.dummy_bonded_balance)
+                        self.dummy_bonded_balance)
 
     def test_set_bonded_balance_raises_no_alerts_if_bonded_balance_the_same(
             self) -> None:
         self.validator.set_bonded_balance(self.dummy_bonded_balance,
-                                          self.channel_set, self.logger)
+                                        self.channel_set, self.logger)
         self.validator.set_bonded_balance(self.dummy_bonded_balance,
-                                          self.channel_set, self.logger)
+                                        self.channel_set, self.logger)
 
         self.assertTrue(self.counter_channel.no_alerts())
         self.assertEqual(self.validator.bonded_balance,
-                         self.dummy_bonded_balance)
+                        self.dummy_bonded_balance)
     
     def test_set_balance_no_alerts_if_difference_is_negative_below_threshold_and_no_balance_is_0(
             self) -> None:
         self.validator.set_bonded_balance(self.dummy_bonded_balance,
-                                          self.channel_set, self.logger)
+                                        self.channel_set, self.logger)
         new_bonded_balance = self.dummy_bonded_balance - \
-                             self.bonded_balance_threshold + 1
+                            self.bonded_balance_threshold + 1
         self.validator.set_bonded_balance(new_bonded_balance, self.channel_set,
-                                          self.logger)
+                                        self.logger)
 
         self.assertTrue(self.counter_channel.no_alerts())
         self.assertEqual(self.validator.bonded_balance,
-                         new_bonded_balance)
+                        new_bonded_balance)
 
     def test_set_balance_no_alerts_if_difference_is_positive_below_threshold_and_no_balance_is_0(
             self) -> None:
         self.validator.set_bonded_balance(self.dummy_bonded_balance,
-                                          self.channel_set, self.logger)
+                                        self.channel_set, self.logger)
         new_bonded_balance = self.dummy_bonded_balance + \
-                             self.bonded_balance_threshold - 1
+                            self.bonded_balance_threshold - 1
         self.validator.set_bonded_balance(new_bonded_balance, self.channel_set,
-                                          self.logger)
+                                        self.logger)
 
         self.assertTrue(self.counter_channel.no_alerts())
         self.assertEqual(self.validator.bonded_balance,
-                         new_bonded_balance)
+                        new_bonded_balance)
     
     def test_set_balance_no_alerts_if_difference_is_negative_and_equal_to_threshold_and_no_balance_is_0(
             self) -> None:
         self.validator.set_bonded_balance(self.dummy_bonded_balance,
-                                          self.channel_set, self.logger)
+                                        self.channel_set, self.logger)
         new_bonded_balance = self.dummy_bonded_balance - \
-                             self.bonded_balance_threshold
+                            self.bonded_balance_threshold
         self.validator.set_bonded_balance(new_bonded_balance, self.channel_set,
-                                          self.logger)
+                                        self.logger)
 
         self.assertTrue(self.counter_channel.no_alerts())
         self.assertEqual(self.validator.bonded_balance,
-                         new_bonded_balance)
+                        new_bonded_balance)
     def test_set_balance_no_alerts_if_difference_is_positive_and_equal_to_threshold_and_no_balance_is_0(
             self) -> None:
         self.validator.set_bonded_balance(self.dummy_bonded_balance,
-                                          self.channel_set, self.logger)
+                                        self.channel_set, self.logger)
         new_bonded_balance = self.dummy_bonded_balance + \
-                             self.bonded_balance_threshold
+                            self.bonded_balance_threshold
         self.validator.set_bonded_balance(new_bonded_balance, self.channel_set,
-                                          self.logger)
+                                        self.logger)
 
         self.assertTrue(self.counter_channel.no_alerts())
         self.assertEqual(self.validator.bonded_balance,
-                         new_bonded_balance)
+                        new_bonded_balance)
 
     def test_set_balance_raises_info_alert_if_difference_is_positive_above_threshold_no_balance_is_0(
             self) -> None:
         self.validator.set_bonded_balance(self.dummy_bonded_balance,
-                                          self.channel_set, self.logger)
+                                        self.channel_set, self.logger)
         new_bonded_balance = self.dummy_bonded_balance + \
-                             self.bonded_balance_threshold + 1
+                            self.bonded_balance_threshold + 1
         self.validator.set_bonded_balance(new_bonded_balance, self.channel_set,
-                                          self.logger)
+                                        self.logger)
 
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              BondedBalanceIncreasedByAlert)
+                            BondedBalanceIncreasedByAlert)
         self.assertEqual(self.validator.bonded_balance,
-                         new_bonded_balance)
+                        new_bonded_balance)
 
     def test_set_balance_raises_info_alert_if_difference_is_negative_above_threshold_no_balance_is_0(
             self) -> None:
         self.validator.set_bonded_balance(self.dummy_bonded_balance,
-                                          self.channel_set, self.logger)
+                                        self.channel_set, self.logger)
         new_bonded_balance = self.dummy_bonded_balance - \
-                             self.bonded_balance_threshold - 1
+                            self.bonded_balance_threshold - 1
         self.validator.set_bonded_balance(new_bonded_balance, self.channel_set,
-                                          self.logger)
+                                        self.logger)
 
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              BondedBalanceDecreasedByAlert)
+                            BondedBalanceDecreasedByAlert)
         self.assertEqual(self.validator.bonded_balance, new_bonded_balance)
 
     def test_set_debonding_balance_raises_no_alerts_first_time_round(self) -> None:
@@ -851,11 +853,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.full_node_no_of_peers_less_than_danger_boundary - 1
         self.full_node.set_no_of_peers(new_no_of_peers,
-                                       self.channel_set, self.logger)
+                                    self.channel_set, self.logger)
 
         self.assertEqual(self.counter_channel.warning_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersDecreasedAlert)
+                            PeersDecreasedAlert)
         self.assertEqual(self.full_node.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_info_alert_if_increase_less_than_danger_full_nodes(
@@ -866,11 +868,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.full_node_no_of_peers_less_than_danger_boundary + 1
         self.full_node.set_no_of_peers(new_no_of_peers,
-                                       self.channel_set, self.logger)
+                                    self.channel_set, self.logger)
 
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersIncreasedAlert)
+                            PeersIncreasedAlert)
         self.assertEqual(self.full_node.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_info_alert_if_increase_equal_to_danger_full_nodes(
@@ -881,11 +883,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.full_node_no_of_peers_less_than_danger_boundary + 2
         self.full_node.set_no_of_peers(new_no_of_peers,
-                                       self.channel_set, self.logger)
+                                    self.channel_set, self.logger)
 
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersIncreasedAlert)
+                            PeersIncreasedAlert)
         self.assertEqual(self.full_node.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_info_alert_if_increase_from_inside_to_outside_danger_full_nodes(
@@ -896,11 +898,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.full_node_no_of_peers_greater_than_danger_boundary
         self.full_node.set_no_of_peers(new_no_of_peers,
-                                       self.channel_set, self.logger)
+                                    self.channel_set, self.logger)
 
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersIncreasedOutsideDangerRangeAlert)
+                            PeersIncreasedOutsideDangerRangeAlert)
         self.assertEqual(self.full_node.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_no_alerts_if_increase_from_outside_to_outside_danger_full_nodes(
@@ -911,7 +913,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.full_node_no_of_peers_greater_than_danger_boundary + 1
         self.full_node.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertTrue(self.counter_channel.no_alerts())
         self.assertEqual(self.full_node.no_of_peers, new_no_of_peers)
@@ -924,7 +926,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.validator_no_of_peers_greater_than_safe_boundary + 1
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertTrue(self.counter_channel.no_alerts())
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
@@ -937,7 +939,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.validator_no_of_peers_greater_than_safe_boundary - 1
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertTrue(self.counter_channel.no_alerts())
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
@@ -950,11 +952,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.validator_no_of_peers_greater_than_safe_boundary - 2
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.warning_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersDecreasedAlert)
+                            PeersDecreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_warning_alert_if_decrease_from_outisde_safe_to_safe_outside_danger_validator(
@@ -965,11 +967,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.validator_no_of_peers_greater_than_safe_boundary - 3
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.warning_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersDecreasedAlert)
+                            PeersDecreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_warning_alert_if_decrease_inside_safe_outside_danger_validator(
@@ -980,11 +982,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.validator_no_of_peers_less_than_safe_boundary - 1
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.warning_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersDecreasedAlert)
+                            PeersDecreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_critical_alert_if_decrease_from_outside_safe_to_equal_danger_validator(
@@ -994,11 +996,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
             self.channel_set, self.logger)
         new_no_of_peers = self.validator_peer_danger_boundary
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.critical_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersDecreasedAlert)
+                            PeersDecreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_critical_alert_if_decrease_from_outside_safe_inside_danger_validator(
@@ -1008,11 +1010,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
             self.channel_set, self.logger)
         new_no_of_peers = self.validator_no_of_peers_less_than_danger_boundary
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.critical_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersDecreasedAlert)
+                            PeersDecreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_critical_alert_if_decrease_from_safe_to_equal_danger_validator(
@@ -1022,11 +1024,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
             self.channel_set, self.logger)
         new_no_of_peers = self.validator_peer_danger_boundary
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.critical_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersDecreasedAlert)
+                            PeersDecreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_critical_alert_if_decrease_from_safe_to_danger_validator(
@@ -1036,11 +1038,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
             self.channel_set, self.logger)
         new_no_of_peers = self.validator_peer_danger_boundary - 1
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.critical_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersDecreasedAlert)
+                            PeersDecreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_critical_alert_if_decrease_inside_danger_validator(
@@ -1051,11 +1053,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.validator_no_of_peers_less_than_danger_boundary - 1
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.critical_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersDecreasedAlert)
+                            PeersDecreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_info_alert_if_increase_inside_danger_validator(
@@ -1066,11 +1068,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
         new_no_of_peers = \
             self.validator_no_of_peers_less_than_danger_boundary + 1
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersIncreasedAlert)
+                            PeersIncreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_info_alert_if_increase_equal_danger_validator(
@@ -1080,11 +1082,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
             self.channel_set, self.logger)
         new_no_of_peers = self.validator_peer_danger_boundary
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersIncreasedAlert)
+                            PeersIncreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_info_alert_if_increase_danger_to_safe_validator(
@@ -1094,11 +1096,11 @@ class TestNodeWithoutRedis(unittest.TestCase):
             self.channel_set, self.logger)
         new_no_of_peers = self.validator_no_of_peers_less_than_safe_boundary
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              PeersIncreasedAlert)
+                            PeersIncreasedAlert)
         self.assertEqual(self.validator.no_of_peers, new_no_of_peers)
 
     def test_set_peers_sets_and_raises_info_alert_if_increase_danger_to_outside_safe_validator(
@@ -1108,7 +1110,7 @@ class TestNodeWithoutRedis(unittest.TestCase):
             self.channel_set, self.logger)
         new_no_of_peers = self.validator_no_of_peers_greater_than_safe_boundary
         self.validator.set_no_of_peers(new_no_of_peers, self.channel_set,
-                                       self.logger)
+                                    self.logger)
 
         self.assertEqual(self.counter_channel.info_count, 1)
         self.assertIsInstance(self.counter_channel.latest_alert,
@@ -2104,6 +2106,7 @@ class TestNodeWithRedis(unittest.TestCase):
             self.fail('Redis is not online.')
 
         self.non_validator = Node(name=self.node_name, api_url=None,
+                            prometheus_endpoint=None,
                             node_type=NodeType.NON_VALIDATOR_FULL_NODE,
                             node_public_key='',chain=self.chain, 
                             redis=self.redis,
@@ -2115,6 +2118,7 @@ class TestNodeWithRedis(unittest.TestCase):
                             internal_conf=TestInternalConf)
 
         self.validator = Node(name=self.node_name, api_url=None,
+                            prometheus_endpoint=None,
                             node_type=NodeType.VALIDATOR_FULL_NODE,
                             node_public_key='', chain=self.chain,
                             redis=self.redis,

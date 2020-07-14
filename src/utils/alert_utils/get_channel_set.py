@@ -8,6 +8,8 @@ from src.channels.log import LogChannel
 from src.channels.mongo import MongoChannel
 from src.channels.telegram import TelegramChannel
 from src.channels.twilio import TwilioChannel
+from src.store.mongo.mongo_api import MongoApi
+from src.store.redis.redis_api import RedisApi
 from src.utils.alert_utils.email_sending import EmailSender
 from src.utils.alert_utils.telegram_bot_api import TelegramBotApi
 from src.utils.alert_utils.twilio_api import TwilioApi
@@ -16,8 +18,6 @@ from src.utils.config_parsers.internal_parsed import InternalConf
 from src.utils.config_parsers.user import UserConfig
 from src.utils.config_parsers.user_parsed import UserConf
 from src.utils.logging import create_logger
-from src.store.mongo.mongo_api import MongoApi
-from src.store.redis.redis_api import RedisApi
 
 
 def _get_log_channel(alerts_log_file: str, channel_name: str,
@@ -78,7 +78,7 @@ def _get_mongo_channel(channel_name: str, logger_general: logging.Logger,
                        redis: Optional[RedisApi], mongo: MongoApi,
                        backup_channels_for_mongo: ChannelSet) -> MongoChannel:
     collection_name = InternalConf.mongo_coll_alerts_prefix + \
-        UserConf.unique_alerter_identifier
+                      UserConf.unique_alerter_identifier
     mongo_channel = MongoChannel(channel_name, logger_general, redis, mongo,
                                  collection_name, backup_channels_for_mongo)
     return mongo_channel
@@ -89,7 +89,6 @@ def get_full_channel_set(channel_name: str, logger_general: logging.Logger,
                          mongo: Optional[MongoApi],
                          internal_conf: InternalConfig = InternalConf,
                          user_conf: UserConfig = UserConf) -> ChannelSet:
-
     # Initialise list of channels with default channels
     channels = [
         _get_console_channel(channel_name, logger_general),

@@ -1,8 +1,10 @@
-from configparser import ConfigParser
 from typing import Optional, List
+
+from configparser import ConfigParser
 
 from src.utils.config_parsers.user import NodeConfig
 from src.utils.data_wrapper.oasis_api import OasisApiWrapper
+from src.utils.get_prometheus import get_oasis_prometheus
 from src.utils.logging import DUMMY_LOGGER
 from src.utils.user_input import yn_prompt
 
@@ -12,16 +14,15 @@ def get_node(nodes_so_far: List[NodeConfig],
     # Get node's name
     node_names_so_far = [n.node_name for n in nodes_so_far]
     while True:
-        node_name = input('Unique node name that is identical to the node name'
-                          'specified in the API server configuration'
-                          ':\n')
+        node_name = input('Unique node name that is identical to the node name '
+                          'specified in the API server configuration:\n')
         if node_name in node_names_so_far:
             print('Node name must be unique.')
         elif len(node_name) == 0:
             print('Node name cannot be empty.')
         else:
             break
-    
+
     # Get the current chain ID
     while True:
         chain_name = input('Node\'s chain ID this can be found at '
@@ -48,11 +49,43 @@ def get_node(nodes_so_far: List[NodeConfig],
                 else:
                     break
 
-
     # Ask if node is a validator
     node_is_validator = yn_prompt('Is this node a validator? (Y/n)\n')
-    node_has_exporter = yn_prompt('Does this node have Node Exporter installed?'
-                                  ' (Y/n)\n')
+
+
+    # Get Node's Node Exporter Url
+    while True:
+        node_exporter_url = input('Node Exporter url (typically '
+                        'http://NODE_EXPORTER_URL:9100/metrics), this will be '
+                        'used to monitor the system statistics. If you do not '
+                        'wish to monitor system statistics leave it blank:\n')
+        if node_exporter_url:
+            print('Trying to access Node Exporter at'.format(node_exporter_url))
+            try:
+                metric_to_test = ['process_cpu_seconds_total']
+
+                prometheus_data = get_oasis_prometheus( \
+                    node_exporter_url, metric_to_test, DUMMY_LOGGER)
+
+                process_cpu_seconds_total = ( \
+                        prometheus_data['process_cpu_seconds_total'])
+
+                oasis_api_data_wrapper.ping_api(api_url)
+                print('Successfully returned CPU seconds total', \
+                    process_cpu_seconds_total)
+                break
+            except Exception:
+                if not yn_prompt('Failed to connect to endpoint. Do '
+                                'you want to try again? (Y/n)\n'):
+                    if not yn_prompt(
+                            'Do you still want to add the node? (Y/n)\n'):
+                        return None
+                    else:
+                        break
+        else:
+            print('Skipping system monitoring setup, the system where the node '
+                  'is installed will not be monitored')
+            break
 
     # Ask if node is an archive node.
     # Note: if the node is a validator, it must also be an archive node.
@@ -67,8 +100,8 @@ def get_node(nodes_so_far: List[NodeConfig],
             node_public_key = input('Node\'s public identifier, found inside '
                             'the file entity.json within the key-value pair '
                             '"nodes":"NODE_PUBLIC_KEY", found on the machine '
-                            'running the node. The format shown below : '
-                            'J4i/ADAze7jYjcmPZvTFHD/tMa3wt9AMeaQALPXZebs=')
+                            'running the node (typically the format is  : '
+                            'J4i/ADAze7jYjcmPZvTFHD/tMa3wt9AMeaQALPXZebs=) : ')
 
             if not node_public_key.strip():
                 if not yn_prompt('You cannot leave the node_public_key '
@@ -82,8 +115,8 @@ def get_node(nodes_so_far: List[NodeConfig],
 
     # Return node
     return NodeConfig(node_name, chain_name, api_url, node_public_key, \
-                    node_is_validator, node_has_exporter, monitor_node, \
-                    node_is_archive_node, True)
+                      node_is_validator, node_exporter_url, monitor_node, \
+                      node_is_archive_node, True)
 
 
 def setup_nodes(cp: ConfigParser) -> None:
@@ -92,7 +125,7 @@ def setup_nodes(cp: ConfigParser) -> None:
           'of nodes to be included in the monitoring will now be set up. This '
           'includes validators, sentries, and any full nodes that can be used '
           'as data sources to monitor from the network\'s perspective, together'
-          ' with whether they have Node Exporter enabled. You '
+          ' with the Node Exporter URL to be used to monitor the system. You '
           'may include nodes from multiple networks in any order; PANIC '
           'will figure out which network they belong to when you run it. Node '
           'names must be set identical to the ones previously set in the API '
@@ -139,8 +172,7 @@ def setup_nodes(cp: ConfigParser) -> None:
         cp[section]['node_public_key'] = node.node_public_key
         cp[section]['node_is_validator'] = \
             'true' if node.node_is_validator else 'false'
-        cp[section]['node_has_exporter'] = \
-            'true' if node.node_has_exporter else 'false'
+        cp[section]['node_exporter_url'] = node.node_exporter_url
         cp[section]['monitor_node'] = \
             'true' if node.monitor_node else 'false'
         cp[section]['is_archive_node'] = \

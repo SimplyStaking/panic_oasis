@@ -8,13 +8,14 @@ import Row from 'react-bootstrap/Row';
 import { forbidExtraProps } from 'airbnb-prop-types';
 import PropTypes from 'prop-types';
 import Routes from '../routing/routes';
-import { NAVBAR_ITEMS } from '../utils/constants';
+import { NAVBAR_NAV_ITEMS } from '../utils/constants';
+import { LogoutButton } from './buttons';
 import '../style/style.css';
 
-function createNavigationBarContent() {
+function createNavigationContent() {
   const content = [];
 
-  Object.entries(NAVBAR_ITEMS).forEach(([item, value]) => {
+  Object.entries(NAVBAR_NAV_ITEMS).forEach(([item, value]) => {
     // If the value is another object, it means we have a dropdown with a list
     // of options. Otherwise, it is a single menu item.
     if (Object.keys(value).length > 1) {
@@ -44,7 +45,7 @@ function createNavigationBarContent() {
   return content;
 }
 
-function HeaderNavigationBar({ brand }) {
+function HeaderNavigationBar({ brand, isAuthenticated, setAuthentication }) {
   return (
     <header>
       <Navbar
@@ -58,12 +59,19 @@ function HeaderNavigationBar({ brand }) {
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
             <Nav className="ml-auto">
-              {createNavigationBarContent()}
+              {createNavigationContent()}
             </Nav>
+            {
+              isAuthenticated
+              && <LogoutButton setAuthentication={setAuthentication} />
+            }
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <Routes />
+      <Routes
+        isAuthenticated={isAuthenticated}
+        setAuthentication={setAuthentication}
+      />
     </header>
   );
 }
@@ -91,6 +99,8 @@ function FooterBanner({ text, href }) {
 
 HeaderNavigationBar.propTypes = forbidExtraProps({
   brand: PropTypes.string.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
+  setAuthentication: PropTypes.func.isRequired,
 });
 
 FooterBanner.propTypes = forbidExtraProps({

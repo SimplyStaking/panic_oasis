@@ -1,15 +1,15 @@
 import concurrent.futures
 import sys
-from typing import List
-import json
 
 from src.alerters.proactive.periodic import PeriodicAliveReminder
 from src.alerters.reactive.node import Node, NodeType
+from src.alerters.reactive.system import System
 from src.alerts.alerts import *
 from src.monitors.github import GitHubMonitor
 from src.monitors.monitor_starters import start_node_monitor, \
-    start_github_monitor
+    start_github_monitor, start_system_monitor
 from src.monitors.node import NodeMonitor
+from src.monitors.system import SystemMonitor
 from src.store.mongo.mongo_api import MongoApi
 from src.store.redis.redis_api import RedisApi
 from src.utils.alert_utils.get_channel_set import get_full_channel_set
@@ -23,8 +23,10 @@ from src.utils.config_parsers.user_parsed import UserConf, \
 from src.utils.data_wrapper.oasis_api import OasisApiWrapper
 from src.utils.exceptions import *
 from src.utils.get_json import get_json
+from src.utils.get_prometheus import get_oasis_prometheus
 from src.utils.logging import create_logger
 from src.web.telegram.telegram import TelegramCommands
+from src.utils.types import EMPTY_URL
 
 
 def log_and_print(text: str):
@@ -37,8 +39,8 @@ def node_from_node_config(node_config: NodeConfig):
     # Test connection and match-up chain name
     log_and_print('Trying to retrieve data from the API of {}'.format(
         node_config.node_name))
-    
-    #Try to ping the API to see if configuration is correct
+
+    # Try to ping the API to see if configuration is correct
     try:
         pong_response = oasis_api_data_wrapper.ping_api(
             node_config.node_api_url)
@@ -48,10 +50,10 @@ def node_from_node_config(node_config: NodeConfig):
                     node_config.node_name))
         log_and_print('Success. API is configured correctly')
     except Exception as e:
-       logger_general.error(e)
-       raise InitialisationException(
-           'Failed to retrieve data from the API of {}'.format(
-               node_config.node_name))
+        logger_general.error(e)
+        raise InitialisationException(
+            'Failed to retrieve data from the API of {}'.format(
+                node_config.node_name))
 
     # Test connection and match-up chain name
     log_and_print('Trying to retrieve node name {} from API'.format(
@@ -64,15 +66,15 @@ def node_from_node_config(node_config: NodeConfig):
             node_config.node_api_url, node_config.node_name)
         if pong_response != "pong":
             log_and_print(
-                'WARNING: Node {} is not configured properly, PANIC node'\
-                    'name should match that set in the API Server.'.format(
+                'WARNING: Node {} is not configured properly, PANIC node' \
+                'name should match that set in the API Server.'.format(
                     node_config.node_name))
         log_and_print('Success. node name is configured correctly')
     except Exception as e:
-       logger_general.error(e)
-       raise InitialisationException(
-           'Failed to retrieve data from the API of {}'.format(
-               node_config.node_name))
+        logger_general.error(e)
+        raise InitialisationException(
+            'Failed to retrieve data from the API of {}'.format(
+                node_config.node_name))
 
     # Get node type
     node_type = NodeType.VALIDATOR_FULL_NODE \
@@ -101,8 +103,8 @@ def node_from_node_config(node_config: NodeConfig):
                 'Failed validating node public key {}'.format(
                     node_config.node_public_key))
     else:
-        entity_public_key = 'empty'
-        staking_address = 'empty'
+        entity_public_key = EMPTY_URL
+        staking_address = EMPTY_URL
 
     # Prometheus configuration should be checked on start up if Peers monitoring
     # is enabled.
@@ -110,39 +112,43 @@ def node_from_node_config(node_config: NodeConfig):
         peers_response = oasis_api_data_wrapper.get_prometheus_gauge(
             node_config.node_api_url, node_config.node_name, \
             "tendermint_p2p_peers")
-        if isinstance(peers_response,int):
+        if isinstance(peers_response, int):
             log_and_print(
                 'WARNING: Node {} does not have prometheus enabled. Please ' \
                 'enable Prometheus to monitor data such as no of Peers'.format(
-                node_config.node_name))
+                    node_config.node_name))
         log_and_print('Success. Prometheus is configured correctly')
     except Exception as e:
         logger_general.error(e)
         raise InitialisationException(
             'Failed to retrieve Prometheus Data from API of {}'.format(
                 node_config.node_name))
-    
+
     # Node Exporter should be an optional tool for System Monitoring
-    if node_config.node_has_exporter == True:
+    if node_config.node_exporter_url != "":
         try:
-            file_descriptors = oasis_api_data_wrapper.get_node_exporter_gauge(
-                node_config.node_api_url, node_config.node_name, \
-                "process_open_fds")
-            if isinstance(file_descriptors,int):
-                log_and_print(
-                    'WARNING: Node {} does not have Node Exporter . Please ' \
-                    'enable Prometheus to monitor data such as no of Peers' \
-                    .format(node_config.node_name))
+            metric_to_test = ['process_cpu_seconds_total']
+
+            prometheus_data = get_oasis_prometheus( \
+                node_config.node_exporter_url, metric_to_test, logger_general)
+
+            process_cpu_seconds_total = ( \
+                prometheus_data['process_cpu_seconds_total'])
+
+            node_exporter_url = node_config.node_exporter_url
             log_and_print('Success. Node Exporter is configured correctly')
         except Exception as e:
+            log_and_print(e)
             logger_general.error(e)
             raise InitialisationException(
-                'Failed to retrieve Node Exporter Data from API of {}'.format(
+                'Failed to retrieve Node Exporter Data from URL of {}'.format(
                     node_config.node_name))
+    else:
+        node_exporter_url = EMPTY_URL
 
     # Test connection and match-up chain name
     log_and_print('Trying to convert the Node {} Key into a Consensus ' \
-            'Public Key and a Tendermint Address key '.format(
+                  'Public Key and a Tendermint Address key '.format(
         node_config.node_name))
 
     # Retrieve the Consensus Public Key and the Tendermint Address
@@ -150,27 +156,29 @@ def node_from_node_config(node_config: NodeConfig):
         try:
             consensus_public_key = oasis_api_data_wrapper. \
                 get_registry_node(node_config.node_api_url, \
-                    node_config.node_name, \
-                    node_config.node_public_key)
-                
+                                  node_config.node_name, \
+                                  node_config.node_public_key)
+
             tendermint_address_key = oasis_api_data_wrapper. \
                 get_tendermint_address(node_config.node_api_url, \
-                    str(consensus_public_key['consensus']['id']))
-            
+                                       str(consensus_public_key['consensus'][
+                                               'id']))
+
             log_and_print('Successfully converted node public key into ' \
-                'Consensus Public Key and Tendermint Address')
+                          'Consensus Public Key and Tendermint Address')
         except Exception as e:
             logger_general.error(e)
             raise InitialisationException(
                 'Failed to convert a node public key for the node {}'.format(
                     node_config.node_name))
     else:
-        consensus_public_key = 'empty'
-        tendermint_address_key = 'empty'
+        consensus_public_key = EMPTY_URL
+        tendermint_address_key = EMPTY_URL
 
     chain_id = node_config.chain_name
     # Initialise node and load any state
-    node = Node(node_config.node_name, node_config.node_api_url, node_type,
+    node = Node(node_config.node_name, node_config.node_api_url,
+                node_exporter_url, node_type,
                 node_config.node_public_key, chain_id, REDIS,
                 node_config.is_archive_node, consensus_public_key,
                 tendermint_address_key, staking_address, entity_public_key,
@@ -200,7 +208,6 @@ def test_connection_to_github_page(repo: RepoConfig):
                                       ''.format(releases_page))
 
 
-
 def run_monitor_nodes(node: Node):
     # Monitor name based on node
     monitor_name = 'Node monitor ({})'.format(node.name)
@@ -210,7 +217,7 @@ def run_monitor_nodes(node: Node):
             InternalConf.node_monitor_general_log_file_template.format(
                 node.name),
             node.name, InternalConf.logging_level, rotating=True)
-        
+
         # Get the data sources which belong to the same chain and prioritise
         # them over the node itself as data sources for indirect node monitoring
         data_sources = [data_source for data_source in data_source_nodes
@@ -225,10 +232,10 @@ def run_monitor_nodes(node: Node):
                 'Indirect monitoring will be disabled for node {} because no '
                 'data source for chain {} was given in the nodes config file.'
                 ''.format(node.name, node.chain))
-        
+
         # Initialise monitor
         node_monitor = NodeMonitor(
-            monitor_name, full_channel_set, logger_monitor_node, 
+            monitor_name, full_channel_set, logger_monitor_node,
             InternalConf.node_monitor_max_catch_up_blocks, REDIS, node,
             archive_alerts_disabled_by_chain[node.chain], data_sources)
 
@@ -242,11 +249,53 @@ def run_monitor_nodes(node: Node):
         log_and_print('{} started.'.format(monitor_name))
         try:
             start_node_monitor(node_monitor,
-                                InternalConf.node_monitor_period_seconds,
-                                logger_monitor_node)
+                               InternalConf.node_monitor_period_seconds,
+                               logger_monitor_node)
         except (UnexpectedApiCallErrorException,
                 UnexpectedApiErrorWhenReadingDataException,
                 InvalidConsensusPublicKeyException) as e:
+            full_channel_set.alert_error(
+                TerminatedDueToFatalExceptionAlert(monitor_name, e))
+            log_and_print('{} stopped.'.format(monitor_name))
+            break
+        except Exception as e:
+            full_channel_set.alert_error(
+                TerminatedDueToExceptionAlert(monitor_name, e))
+        log_and_print('{} stopped.'.format(monitor_name))
+
+
+def run_monitor_systems(node: Node):
+    # Monitor name based on node
+    monitor_name = 'System monitor ({})'.format(node.name)
+
+    try:
+        # Logger initialisation
+        logger_monitor_system = create_logger(
+            InternalConf.system_monitor_general_log_file_template.format(
+                node.name), node.name, InternalConf.logging_level,
+            rotating=True)
+
+        # Create a system from the node
+        system = System(node.name, REDIS, node, InternalConf)
+
+        # Initialize the SystemMonitor
+        system_monitor = SystemMonitor(monitor_name, system, full_channel_set,
+                                       logger_monitor_system, REDIS,
+                                       node.prometheus_endpoint,
+                                       InternalConf)
+    except Exception as e:
+        msg = '!!! Error when initialising {}: {} !!!'.format(monitor_name, e)
+        log_and_print(msg)
+        raise InitialisationException(msg)
+
+    while True:
+        # Start
+        log_and_print('{} started.'.format(monitor_name))
+        try:
+            start_system_monitor(system_monitor,
+                                 InternalConf.system_monitor_period_seconds,
+                                 logger_monitor_system)
+        except Exception as e:
             full_channel_set.alert_error(
                 TerminatedDueToFatalExceptionAlert(monitor_name, e))
             log_and_print('{} stopped.'.format(monitor_name))
@@ -347,9 +396,9 @@ if __name__ == '__main__':
 
         sys.exit('Internal config file {} is missing.'
                  ''.format(MISSING_INTERNAL_CONFIG_FILES[0]))
-    
+
     elif len(MISSING_USER_CONFIG_FILES) > 0:
-        
+
         sys.exit('User config file {} is missing. Make sure that you run the '
                  'setup script (run_setup.py) before running the alerter.'
                  ''.format(MISSING_USER_CONFIG_FILES[0]))
@@ -402,15 +451,15 @@ if __name__ == '__main__':
 
     # Alerters initialisation
     alerter_name = 'PANIC'
-    
-    #Returns the full list of channels and decides who is enabled or not.
+
+    # Returns the full list of channels and decides who is enabled or not.
     full_channel_set = get_full_channel_set(
         alerter_name, logger_general, REDIS, log_file_alerts, MONGO)
-    
-    #Returns list of enabled channels in string format
+
+    # Returns list of enabled channels in string format
     log_and_print('Enabled alerting channels (general): {}'.format(
         full_channel_set.enabled_channels_list()))
-    
+
     par_channel_set = \
         get_periodic_alive_reminder_channel_set(alerter_name, logger_general,
                                                 REDIS, log_file_alerts, MONGO)
@@ -446,15 +495,17 @@ if __name__ == '__main__':
     for ni in nodes_inaccessible:
         UserConf.filtered_nodes.remove(ni)
 
-
     # Organize nodes into lists according to their category
     node_monitor_nodes = []
+    system_monitor_nodes = []
     data_source_nodes = []
     for node, node_conf in zip(nodes, UserConf.filtered_nodes):
         if node_conf.monitor_node:
             node_monitor_nodes.append(node)
         if node_conf.use_as_data_source:
             data_source_nodes.append(node)
+        if node.prometheus_endpoint != EMPTY_URL:
+            system_monitor_nodes.append(node)
 
     # Get the unique chains of the data sources and group the data source nodes
     # by chain. This is done for the blockchain monitor.
@@ -528,6 +579,7 @@ if __name__ == '__main__':
     with concurrent.futures.ThreadPoolExecutor(max_workers=total_count) \
             as executor:
         executor.map(run_monitor_nodes, node_monitor_nodes)
+        executor.map(run_monitor_systems, system_monitor_nodes)
         executor.map(run_monitor_github, UserConf.filtered_repos)
         executor.submit(run_commands_telegram)
         executor.submit(run_periodic_alive_reminder)

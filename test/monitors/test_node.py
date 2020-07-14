@@ -85,7 +85,6 @@ DATA_SOURCE_ARCHIVE_PATH = \
 class TestNodeMonitorWithoutRedis(unittest.TestCase):
     def setUp(self) -> None:
         self.logger = logging.getLogger('dummy')
-        self.logger_events = logging.getLogger('dummy_events')
         self.monitor_name = 'testnodemonitor'
         self.counter_channel = CounterChannel(self.logger)
         self.channel_set = ChannelSet([self.counter_channel], TestInternalConf)
@@ -103,7 +102,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
         self.full_node_entity_public_key="a98dabsfkjabfkjabsf9j"
         self.full_node_staking_address="asdsasdsdsaasdsdaswwad"
 
-        self.full_node = Node(self.full_node_name, self.full_node_api_url,
+        self.full_node = Node(self.full_node_name, self.full_node_api_url, None,
                               NodeType.NON_VALIDATOR_FULL_NODE, '', self.chain,
                               None, True, self.full_node_consensus_key,
                               self.full_node_tendermint_key, 
@@ -125,7 +124,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
         self.validator_node_entity_public_key="s12adsdghas9as0sa9dhnaskdlan"
         self.validator_node_staking_address="jujuujsmjmsjmaklzsdjsdnanz"
 
-        self.validator = Node(self.validator_name, self.validator_api_url,
+        self.validator = Node(self.validator_name, self.validator_api_url, None,
                               NodeType.VALIDATOR_FULL_NODE,
                               self.validator_node_public_key, self.chain,
                               None, True, self.validator_consensus_key,
@@ -175,6 +174,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
         self.dummy_node_staking_address_3 = "staking_key_3"
         self.dummy_full_node_1 = Node(name=self.dummy_node_name_1,
                                     api_url=self.dummy_api_url_1,
+                                    prometheus_endpoint=None,
                                     node_type=NodeType.NON_VALIDATOR_FULL_NODE,
                                     node_public_key='',
                                     chain=self.chain, redis=None,
@@ -186,6 +186,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
                                     internal_conf=TestInternalConf)
         self.dummy_full_node_2 = Node(name=self.dummy_node_name_2,
                                     api_url=self.dummy_api_url_2,
+                                    prometheus_endpoint=None,
                                     node_type=NodeType.NON_VALIDATOR_FULL_NODE,
                                     node_public_key='',
                                     chain=self.chain, redis=None,
@@ -197,6 +198,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
                                     internal_conf=TestInternalConf)
         self.dummy_full_node_3 = Node(name=self.dummy_node_name_3,
                                     api_url=self.dummy_api_url_3,
+                                    prometheus_endpoint=None,
                                     node_type=NodeType.NON_VALIDATOR_FULL_NODE,
                                     node_public_key='',
                                     chain=self.chain, redis=None,
@@ -208,6 +210,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
                                     internal_conf=TestInternalConf)
         self.dummy_full_node_4 = Node(name=self.dummy_node_name_5,
                                     api_url=self.dummy_api_url_5,
+                                    prometheus_endpoint=None,
                                     node_type=NodeType.NON_VALIDATOR_FULL_NODE,
                                     node_public_key='',
                                     chain=self.chain, redis=None,
@@ -224,6 +227,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
 
         self.dummy_validator_node_1 = Node(
             name=self.dummy_node_name_4, api_url=self.dummy_api_url_4,
+            prometheus_endpoint=None,
             node_type=NodeType.VALIDATOR_FULL_NODE,
             node_public_key=self.validator_node_public_key,
             chain=self.chain, redis=None, is_archive_node=True,
@@ -235,6 +239,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
 
         self.dummy_validator_node_2 = Node(
             name=self.dummy_validator_node_name_2, api_url=self.dummy_api_url_4,
+            prometheus_endpoint=None,
             node_type=NodeType.VALIDATOR_FULL_NODE,
             node_public_key=self.validator_node_public_key,
             chain=self.chain, redis=None, is_archive_node=True,
@@ -246,6 +251,7 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
 
         self.dummy_validator_node_3 = Node(
             name=self.dummy_validator_node_name_3, api_url=self.dummy_api_url_4,
+            prometheus_endpoint=None,
             node_type=NodeType.VALIDATOR_FULL_NODE,
             node_public_key=self.validator_node_public_key,
             chain=self.chain, redis=None, is_archive_node=True,
@@ -834,7 +840,8 @@ class TestNodeMonitorWithoutRedis(unittest.TestCase):
             test_monitor._monitor_archive_state()
 
             self.assertEqual(self.counter_channel.critical_count,3)
-# @unittest.skip("Skipping Test Node Monitor With Redis")
+
+# # @unittest.skip("Skipping Test Node Monitor With Redis")
 class TestNodeMonitorWithRedis(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -854,7 +861,6 @@ class TestNodeMonitorWithRedis(unittest.TestCase):
 
     def setUp(self) -> None:
         self.logger = logging.getLogger('dummy')
-        self.logger_events = logging.getLogger('dummy_events')
         self.monitor_name = 'testnodemonitor'
         self.counter_channel = CounterChannel(self.logger)
         self.channel_set = ChannelSet([self.counter_channel], TestInternalConf)

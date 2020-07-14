@@ -9,17 +9,16 @@ import { ToastsStore } from 'react-toasts';
 import moment from 'moment';
 import { getAllChainInfo, getChainNames } from '../utils/data';
 import {
-  MONITOR_TYPES, MONITOR_TYPE, NODE_TYPE,
+  MONITOR_TYPES, MONITOR_TYPE, NODE_TYPE, SYSTEM_TYPE,
 } from '../utils/constants';
 import {
-  createMonitorStats,
-  createMonitorTypeFromJson,
-  createNodesFromJson,
+  createMonitorStats, createMonitorTypeFromJson, createNodesFromJson,
+  createSystemsFromJson,
 } from '../utils/dashboard';
 import Page from '../components/page';
 import ChainsDropDown from '../components/dropdowns';
-import NodeBadges from '../components/badges';
-import NodeSelectionTabs from '../components/tabs';
+import { SystemBadges, NodeBadges } from '../components/badges';
+import { SystemSelectionTabs, NodeSelectionTabs } from '../components/tabs';
 import TooltipOverlay from '../components/overlays';
 import '../style/style.css';
 
@@ -45,7 +44,7 @@ moment.relativeTimeThreshold('dd', 28);
 moment.relativeTimeThreshold('MM', 12);
 moment.relativeTimeRounding(Math.floor);
 
-function MoreDetails({
+function MoreDetailsNode({
   nodes, activeNodeIndex, activeChain, handleSelectNode,
 }) {
   return (
@@ -56,6 +55,22 @@ function MoreDetails({
         activeNodeIndex={activeNodeIndex}
         activeChain={activeChain}
         handleSelectNode={handleSelectNode}
+      />
+    </div>
+  );
+}
+
+function MoreDetailsSystem({
+  systems, activeSystemIndex, activeChain, handleSelectSystem,
+}) {
+  return (
+    <div>
+      <h1 className="heading-style-2">More Details</h1>
+      <SystemSelectionTabs
+        systems={systems}
+        activeSystemIndex={activeSystemIndex}
+        activeChain={activeChain}
+        handleSelectSystem={handleSelectSystem}
       />
     </div>
   );
@@ -76,6 +91,29 @@ function NodesOverviewTableContent({ nodes, activeChain }) {
   return content;
 }
 
+function SystemsOverviewTableContent({
+  systems, activeChain, activeChainJson,
+}) {
+  const content = [];
+  for (let i = 0; i < systems.length; i += 1) {
+    if (systems[i].chain === activeChain) {
+      content.push(
+        <tr key={systems[i].name}>
+          <td>{systems[i].name}</td>
+          <td>
+            <SystemBadges
+              system={systems[i]}
+              activeChainJson={activeChainJson}
+              systemHasValidator={systems[i].systemHasValidator}
+            />
+          </td>
+        </tr>,
+      );
+    }
+  }
+  return content;
+}
+
 function NodesOverviewTable({ nodes, activeChain }) {
   return (
     <Table responsive className="tables-style-3">
@@ -86,7 +124,27 @@ function NodesOverviewTable({ nodes, activeChain }) {
         </tr>
       </thead>
       <tbody>
-        <NodesOverviewTableContent nodes={nodes} activeChain={activeChain}/>
+        <NodesOverviewTableContent nodes={nodes} activeChain={activeChain} />
+      </tbody>
+    </Table>
+  );
+}
+
+function SystemsOverviewTable({ systems, activeChain, activeChainJson }) {
+  return (
+    <Table responsive className="tables-style-3">
+      <thead>
+        <tr>
+          <th>Systems</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <SystemsOverviewTableContent
+          systems={systems}
+          activeChain={activeChain}
+          activeChainJson={activeChainJson}
+        />
       </tbody>
     </Table>
   );
@@ -99,11 +157,32 @@ function NodesOverview({
     <Container>
       <h1 className="heading-style-1">Nodes Overview</h1>
       <NodesOverviewTable nodes={nodes} activeChain={activeChain} />
-      <MoreDetails
+      <MoreDetailsNode
         nodes={nodes}
         activeNodeIndex={activeNodeIndex}
         activeChain={activeChain}
         handleSelectNode={handleSelectNode}
+      />
+    </Container>
+  );
+}
+
+function SystemsOverview({
+  systems, activeChain, activeSystemIndex, handleSelectSystem, activeChainJson,
+}) {
+  return (
+    <Container>
+      <h1 className="heading-style-1">Systems Overview</h1>
+      <SystemsOverviewTable
+        systems={systems}
+        activeChain={activeChain}
+        activeChainJson={activeChainJson}
+      />
+      <MoreDetailsSystem
+        systems={systems}
+        activeSystemIndex={activeSystemIndex}
+        activeChain={activeChain}
+        handleSelectSystem={handleSelectSystem}
       />
     </Container>
   );
@@ -116,7 +195,7 @@ function MonitorsStatusTableContent({ monitors }) {
     const monitor = monitors[i];
     const monitorStats = createMonitorStats(monitor);
     content.push(
-      <tr key={monitor.name}>
+      <tr key={monitor.name + monitor.type}>
         <td>{monitor.name}</td>
         <td>{monitor.type}</td>
         {
@@ -124,10 +203,10 @@ function MonitorsStatusTableContent({ monitors }) {
             ? <td className="time-style">{monitorStats.lastUpdate}</td>
             : (
               <TooltipOverlay
-              identifier="tooltip-top"
+                identifier="tooltip-top"
                 placement="top"
                 tooltipText={moment.unix(monitorStats.lastUpdate).format(
-                  'DD-MM-YYYY HH:mm:ss',  
+                  'DD-MM-YYYY HH:mm:ss',
                 )}
                 component={(
                   <td className="time-style">
@@ -148,9 +227,14 @@ function MonitorsStatusTable({ monitors }) {
     <Table responsive className="tables-style-3">
       <thead>
         <tr>
-          <th>Monitor</th>
-          <th>Type</th>
-          <th className="column-style" style={{ width: '200px' }}>Last Update</th>
+          <th style={{ minWidth: '200px' }}>Monitor</th>
+          <th style={{ minWidth: '200px' }}>Type</th>
+          <th
+            className="column-style"
+            style={{ minWidth: '200px' }}
+          >
+            Last Update
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -184,6 +268,9 @@ class Dashboard extends Component {
       nodes: [],
       // By default select the first node of the active chain
       activeNodeIndex: 0,
+      systems: [],
+      // By default select the first system of the active chain
+      activeSystemIndex: 0,
       monitors: [],
       updateClock: false,
       redisErrorOnChainChange: false,
@@ -218,6 +305,7 @@ class Dashboard extends Component {
     const response = await this.fetchChains();
     if (response === 0) {
       this.fetchNodes();
+      this.fetchSystems();
       this.fetchMonitors();
       this.setState({ isFetchingData: false });
       return 0;
@@ -279,7 +367,7 @@ class Dashboard extends Component {
     const chainInfo = response.data.result;
     this.setState({
       chainNames,
-      activeChain : activeChainName,
+      activeChain: activeChainName,
       activeChainJson: chainInfo,
       redisErrorOnChainChange: false,
     });
@@ -293,6 +381,13 @@ class Dashboard extends Component {
     this.setState({ nodes });
   }
 
+  fetchSystems() {
+    const { state } = this;
+    const systemsJson = state.activeChainJson.systems;
+    const systems = createSystemsFromJson(state.activeChain, systemsJson);
+    this.setState({ systems });
+  }
+
   fetchMonitors() {
     const { state } = this;
     const nodeMonitors = createMonitorTypeFromJson(
@@ -300,20 +395,26 @@ class Dashboard extends Component {
       state.activeChainJson.monitors,
       MONITOR_TYPES.node_monitor,
     );
-
-    this.setState({ monitors : nodeMonitors});
+    const systemMonitors = createMonitorTypeFromJson(
+      state.activeChain,
+      state.activeChainJson.monitors,
+      MONITOR_TYPES.system_monitor,
+    );
+    const monitors = nodeMonitors.concat(systemMonitors);
+    this.setState({ monitors });
   }
 
   handleSelectChain(selectedChain) {
     // This must be done because the 'selectedChain' value is passed as string.
     const selectedChainParsed = parseInt(selectedChain, 10);
 
-    // Set the active node to the first node of the selected chain and fetch
-    // it's data
+    // Set the active node and the active system to the first node and system
+    // of the selected chain and fetch it's data
     this.setState({
       isFetchingData: true,
       activeChainIndex: selectedChainParsed,
       activeNodeIndex: 0,
+      activeSystemIndex: 0,
     }, async () => {
       const response = await this.fetchData();
       if (response === -1) {
@@ -324,6 +425,10 @@ class Dashboard extends Component {
 
   handleSelectNode(selectedNode) {
     this.setState({ activeNodeIndex: parseInt(selectedNode, 10) });
+  }
+
+  handleSelectSystem(selectedSystem) {
+    this.setState({ activeSystemIndex: parseInt(selectedSystem, 10) });
   }
 
   render() {
@@ -348,6 +453,19 @@ class Dashboard extends Component {
                       activeChain={state.activeChain}
                       activeNodeIndex={state.activeNodeIndex}
                       handleSelectNode={node => this.handleSelectNode(node)}
+                    />
+                  )
+                  }
+                  { state.systems.length > 0
+                  && (
+                    <SystemsOverview
+                      systems={state.systems}
+                      activeChain={state.activeChain}
+                      activeSystemIndex={state.activeSystemIndex}
+                      handleSelectSystem={
+                        system => this.handleSelectSystem(system)
+                      }
+                      activeChainJson={state.activeChainJson}
                     />
                   )
                   }
@@ -388,26 +506,23 @@ ChainsDropDown.propTypes = forbidExtraProps({
   handleSelectChain: PropTypes.func.isRequired,
 });
 
-NodeSelectionTabs.propTypes = forbidExtraProps({
+MoreDetailsNode.propTypes = forbidExtraProps({
   nodes: PropTypes.arrayOf(NODE_TYPE).isRequired,
   activeNodeIndex: PropTypes.number.isRequired,
   handleSelectNode: PropTypes.func.isRequired,
-});
-
-MoreDetails.propTypes = forbidExtraProps({
-  nodes: PropTypes.arrayOf(NODE_TYPE).isRequired,
-  activeNodeIndex: PropTypes.number.isRequired,
-  handleSelectNode: PropTypes.func.isRequired,
+  activeChain: PropTypes.string.isRequired,
 });
 
 NodesOverviewTable.propTypes = forbidExtraProps({
   nodes: PropTypes.arrayOf(NODE_TYPE).isRequired,
+  activeChain: PropTypes.string.isRequired,
 });
 
 NodesOverview.propTypes = forbidExtraProps({
   nodes: PropTypes.arrayOf(NODE_TYPE).isRequired,
   activeNodeIndex: PropTypes.number.isRequired,
   handleSelectNode: PropTypes.func.isRequired,
+  activeChain: PropTypes.string.isRequired,
 });
 
 
@@ -417,6 +532,27 @@ MonitorsStatusTable.propTypes = forbidExtraProps({
 
 MonitorsStatus.propTypes = forbidExtraProps({
   monitors: PropTypes.arrayOf(MONITOR_TYPE).isRequired,
+});
+
+SystemsOverviewTable.propTypes = forbidExtraProps({
+  systems: PropTypes.arrayOf(SYSTEM_TYPE).isRequired,
+  activeChain: PropTypes.string.isRequired,
+  activeChainJson: PropTypes.objectOf(PropTypes.object).isRequired,
+});
+
+SystemsOverview.propTypes = forbidExtraProps({
+  systems: PropTypes.arrayOf(SYSTEM_TYPE).isRequired,
+  activeChain: PropTypes.string.isRequired,
+  activeChainJson: PropTypes.objectOf(PropTypes.object).isRequired,
+  activeSystemIndex: PropTypes.number.isRequired,
+  handleSelectSystem: PropTypes.func.isRequired,
+});
+
+MoreDetailsSystem.propTypes = forbidExtraProps({
+  systems: PropTypes.arrayOf(SYSTEM_TYPE).isRequired,
+  activeChain: PropTypes.string.isRequired,
+  activeSystemIndex: PropTypes.number.isRequired,
+  handleSelectSystem: PropTypes.func.isRequired,
 });
 
 export default Dashboard;

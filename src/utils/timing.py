@@ -33,6 +33,7 @@ class TimedTaskLimiter:
     def set_last_time_that_did_task(self, time: datetime) -> None:
         self._last_time_that_did_task = time
 
+
 class TimedOccurrenceTracker:
     def __init__(self, max_occurrences: int, time_interval: timedelta) -> None:
         super().__init__()

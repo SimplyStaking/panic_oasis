@@ -2,9 +2,10 @@ import React from 'react';
 import Badge from 'react-bootstrap/Badge';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Node from '../components/node';
+import System from '../components/system';
 import Monitor from '../components/monitor';
 import { MONITOR_TYPES } from './constants';
-import scaleToNano from './scaling';
+import { scaleToNano } from './scaling';
 import '../style/style.css';
 
 function createNodesFromJson(activeChain, nodesJson) {
@@ -30,13 +31,13 @@ function createNodesFromJson(activeChain, nodesJson) {
       : parseInt(data.bonded_balance, 10);
     const debondingBalance = data.debonding_balance === null
       || data.debonding_balance === 'None' ? -1
-        : parseInt(data.debonding_balance, 10);
+      : parseInt(data.debonding_balance, 10);
     const sharesBalance = data.shares_balance === null
         || data.shares_balance === 'None' ? -1
-          : parseInt(data.shares_balance, 10);
+      : parseInt(data.shares_balance, 10);
     const votingPower = data.voting_power === null
           || data.voting_power === 'None' ? -1
-            : parseInt(data.voting_power, 10);
+      : parseInt(data.voting_power, 10);
     const active = data.active === null || data.active === 'None' ? -1
       : data.active.toLowerCase() === 'true';
     const isMissingBlocks = data.is_missing_blocks === null ? -1
@@ -55,13 +56,55 @@ function createNodesFromJson(activeChain, nodesJson) {
   return nodes;
 }
 
+function createSystemsFromJson(activeChain, systemsJson) {
+  const systems = [];
+  Object.entries(systemsJson).forEach(([system, data]) => {
+    const chain = activeChain;
+    const name = system;
+
+    const systemHasValidator = data.system_has_validator === null ? -1
+      : data.system_has_validator.toLowerCase() === 'true';
+    const processCPUSecondsTotal = data.process_cpu_seconds_total === null
+    || data.process_cpu_seconds_total === 'None' ? -1
+      : parseFloat(data.process_cpu_seconds_total);
+    const processMemoryUsage = data.process_memory_usage === null
+    || data.process_memory_usage === 'None' ? -1
+      : parseFloat(data.process_memory_usage);
+    const virtualMemoryUsage = data.virtual_memory_usage === null
+    || data.virtual_memory_usage === 'None' ? -1
+      : parseFloat(data.virtual_memory_usage);
+    const openFileDescriptors = data.open_file_descriptors === null
+    || data.open_file_descriptors === 'None' ? -1
+      : parseFloat(data.open_file_descriptors);
+    const systemCPUUsage = data.system_cpu_usage === null
+    || data.system_cpu_usage === 'None' ? -1
+      : parseFloat(data.system_cpu_usage);
+    const systemRAMUsage = data.system_ram_usage === null
+    || data.system_ram_usage === 'None' ? -1
+      : parseFloat(data.system_ram_usage);
+    const systemStorageUsage = data.system_storage_usage === null
+    || data.system_storage_usage === 'None' ? -1
+      : parseFloat(data.system_storage_usage);
+
+    systems.push(
+      new System(name, chain, systemHasValidator, processCPUSecondsTotal,
+        processMemoryUsage, virtualMemoryUsage, openFileDescriptors,
+        systemCPUUsage, systemRAMUsage, systemStorageUsage),
+    );
+  });
+
+  return systems;
+}
+
 function createMonitorTypeFromJson(activeChain, monitorsJson, monitorType) {
   const monitors = [];
   let monitorTypeJson;
 
   if (monitorType === MONITOR_TYPES.node_monitor) {
     monitorTypeJson = monitorsJson.node;
-  }else {
+  } else if (monitorType === MONITOR_TYPES.system_monitor) {
+    monitorTypeJson = monitorsJson.system;
+  } else {
     return monitors;
   }
   Object.entries(monitorTypeJson).forEach(([monitor, data]) => {
@@ -83,7 +126,7 @@ function createActiveNodeStats(node) {
   const sharesBalance = node.sharesBalance === -1
     ? 'N/a' : scaleToNano(node.sharesBalance);
   const votingPower = node.votingPower === -1
-  ? 'N/a' : node.votingPower;
+    ? 'N/a' : node.votingPower;
   const consecutiveBlocksMissed = node.consecutiveBlocksMissed === -1
     ? 'N/a' : node.consecutiveBlocksMissed;
   const wentDownAt = node.wentDownAt === -1 ? 'N/a' : node.wentDownAt;
@@ -120,16 +163,16 @@ function createBadge(name, variant, key) {
 
 function createChainDropDownItems(elements, activeChainIndex) {
   const items = [];
-  if (elements.length === 1){
+  if (elements.length === 1) {
     items.push(
       <NavDropdown.Item
         key="no-option-key"
-        style={{'font-size': '15px'}}
+        style={{ 'font-size': '15px' }}
         disabled
       >
-      -- No other option --
-      </NavDropdown.Item>
-    )
+        -- No other option --
+      </NavDropdown.Item>,
+    );
   }
   for (let i = 0; i < elements.length; i += 1) {
     if (i !== activeChainIndex) {
@@ -147,7 +190,35 @@ function createChainDropDownItems(elements, activeChainIndex) {
   return items;
 }
 
+function createActiveSystemStats(system) {
+  const processCPUSecondsTotal = system.processCPUSecondsTotal === -1
+    ? 'N/a' : system.processCPUSecondsTotal;
+  const processMemoryUsage = system.processMemoryUsage === -1
+    ? 'N/a' : system.processMemoryUsage;
+  const virtualMemoryUsage = system.virtualMemoryUsage === -1
+    ? 'N/a' : system.virtualMemoryUsage;
+  const openFileDescriptors = system.openFileDescriptors === -1
+    ? 'N/a' : system.openFileDescriptors;
+  const systemCPUUsage = system.systemCPUUsage === -1
+    ? 'N/a' : system.systemCPUUsage;
+  const systemRAMUsage = system.systemRAMUsage === -1
+    ? 'N/a' : system.systemRAMUsage;
+  const systemStorageUsage = system.systemStorageUsage === -1
+    ? 'N/a' : system.systemStorageUsage;
+
+  return {
+    processCPUSecondsTotal,
+    processMemoryUsage,
+    virtualMemoryUsage,
+    openFileDescriptors,
+    systemCPUUsage,
+    systemRAMUsage,
+    systemStorageUsage,
+  };
+}
+
 export {
   createNodesFromJson, createMonitorTypeFromJson, createActiveNodeStats,
   createMonitorStats, createBadge, createChainDropDownItems,
+  createActiveSystemStats, createSystemsFromJson,
 };

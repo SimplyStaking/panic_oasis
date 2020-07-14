@@ -3,7 +3,6 @@ class Node {
     noOfPeers, lastHeightUpdate, height, bondedBalance, isActive,
     isMissingBlocks, debondingBalance, sharesBalance, votingPower,
     consecutiveBlocksMissed) {
-    
     this.name_ = name || '';
     this.chain_ = chain || '';
     this.isValidator_ = isValidator || false;
@@ -79,11 +78,6 @@ class Node {
   }
 
   get isMissingBlocks() {
-    // if (this.consecutiveBlocksMissed_ > 0){
-    //   return true;
-    // }else{
-    //   return false;
-    // }
     return this.isMissingBlocks_;
   }
 

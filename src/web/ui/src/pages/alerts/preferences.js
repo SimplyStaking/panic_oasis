@@ -153,6 +153,11 @@ class Preferences extends Component {
     this.dataTimer = setInterval(this.fetchAlertsConfig.bind(this), 5000);
   }
 
+  componentWillUnmount() {
+    clearInterval(this.dataTimer);
+    this.dataTimer = null;
+  }
+
   async fetchAlertsConfig() {
     let response;
     try {

@@ -3,15 +3,14 @@ from datetime import timedelta
 from typing import Optional
 
 import dateutil.parser
-import ast
 
 from src.alerts.alerts import *
 from src.channels.channel import ChannelSet
+from src.store.redis.redis_api import RedisApi
 from src.store.store_keys import *
 from src.utils.config_parsers.internal import InternalConfig
 from src.utils.config_parsers.internal_parsed import InternalConf
 from src.utils.datetime import strfdelta
-from src.store.redis.redis_api import RedisApi
 from src.utils.scaling import scale_to_giga, scale_to_nano
 from src.utils.timing import TimedTaskLimiter, TimedOccurrenceTracker
 from src.utils.types import NONE
@@ -23,16 +22,18 @@ class NodeType(Enum):
 
 
 class Node:
-    def __init__(self, name: str, api_url: Optional[str], node_type: NodeType,
-                node_public_key: Optional[str], chain: str,
-                redis: Optional[RedisApi], is_archive_node: bool,
-                consensus_public_key: str, tendermint_address_key: str,
-                staking_address: str, entity_public_key: str,
-                internal_conf: InternalConfig = InternalConf) -> None:
+    def __init__(self, name: str, api_url: Optional[str], prometheus_endpoint:
+    Optional[str], node_type: NodeType, node_public_key:
+    Optional[str], chain: str, redis: Optional[RedisApi],
+                 is_archive_node: bool, consensus_public_key: str,
+                 tendermint_address_key: str, staking_address: str,
+                 entity_public_key: str,
+                 internal_conf: InternalConfig = InternalConf) -> None:
         super().__init__()
 
         self.name = name
         self._api_url = api_url
+        self._prometheus_endpoint = prometheus_endpoint
         self._node_type = node_type
         self._node_public_key = node_public_key
         self._chain = chain
@@ -159,10 +160,14 @@ class Node:
     @property
     def staking_address(self) -> str:
         return self._staking_address
-        
+
     @property
     def api_url(self) -> str:
         return self._api_url
+
+    @property
+    def prometheus_endpoint(self) -> str:
+        return self._prometheus_endpoint
 
     @property
     def chain(self) -> str:
@@ -197,10 +202,10 @@ class Node:
         return self._finalized_block_height
 
     def status(self) -> str:
-        return "bonded_balance={}, debonding_balance={}, shares_balance={},"\
-                " is_syncing={}, no_of_peers={}, active={}, " \
-                "finalized_block_height={}, is_missing_blocks={}"\
-            .format(self.bonded_balance, self.debonding_balance, 
+        return "bonded_balance={}, debonding_balance={}, shares_balance={}," \
+               " is_syncing={}, no_of_peers={}, active={}, " \
+               "finalized_block_height={}, is_missing_blocks={}" \
+            .format(self.bonded_balance, self.debonding_balance,
                     self.shares_balance, self.is_syncing, self.no_of_peers,
                     self.is_active, self.finalized_block_height,
                     self.is_missing_blocks)
@@ -313,7 +318,8 @@ class Node:
                 '_is_missing_blocks=%s',
                 self.name, self._went_down_at, self._bonded_balance,
                 self._debonding_balance, self._shares_balance, self._is_syncing,
-                self._no_of_peers, self._active, self._consecutive_blocks_missed,
+                self._no_of_peers, self._active,
+                self._consecutive_blocks_missed,
                 self._time_of_last_height_change,
                 self._time_of_last_height_check_activity,
                 self._finalized_block_height,
@@ -325,9 +331,9 @@ class Node:
                 Keys.get_node_went_down_at(self.name): str(self._went_down_at),
                 Keys.get_node_bonded_balance(self.name): self._bonded_balance,
                 Keys.get_node_debonding_balance(self.name):
-                self._debonding_balance,
+                    self._debonding_balance,
                 Keys.get_node_shares_balance(self.name):
-                self._shares_balance,
+                    self._shares_balance,
                 Keys.get_node_is_syncing(self.name): str(self._is_syncing),
                 Keys.get_node_no_of_peers(self.name): self._no_of_peers,
                 Keys.get_voting_power(self.name): self._voting_power,
@@ -349,7 +355,7 @@ class Node:
     def set_as_down(self, channels: ChannelSet, logger: logging.Logger) -> None:
 
         logger.debug('%s set_as_down: is_down(currently)=%s, channels=%s',
-                    self, self.is_down, channels)
+                     self, self.is_down, channels)
 
         # Alert (varies depending on whether was already down)
         if self.is_down and not self._initial_downtime_alert_sent:
@@ -362,7 +368,7 @@ class Node:
         elif self.is_down and self._downtime_alert_limiter.can_do_task():
             went_down_at = datetime.fromtimestamp(self._went_down_at)
             downtime = strfdelta(datetime.now() - went_down_at,
-                                "{hours}h, {minutes}m, {seconds}s")
+                                 "{hours}h, {minutes}m, {seconds}s")
             if self.is_validator:
                 channels.alert_critical(StillCannotAccessNodeAlert(
                     self.name, went_down_at, downtime))
@@ -387,7 +393,7 @@ class Node:
             if self._initial_downtime_alert_sent:
                 went_down_at = datetime.fromtimestamp(self._went_down_at)
                 downtime = strfdelta(datetime.now() - went_down_at,
-                                    "{hours}h, {minutes}m, {seconds}s")
+                                     "{hours}h, {minutes}m, {seconds}s")
                 channels.alert_info(NowAccessibleAlert(
                     self.name, went_down_at, downtime))
 
@@ -430,7 +436,8 @@ class Node:
         self._bonded_balance = new_bonded_balance
 
     def set_debonding_balance(self, new_debonding_balance: int, \
-            channels: ChannelSet, logger: logging.Logger) -> None:
+                              channels: ChannelSet,
+                              logger: logging.Logger) -> None:
 
         logger.debug(
             '%s set_debonding_balance: before=%s, new=%s, channels=%s',
@@ -440,7 +447,8 @@ class Node:
         if self.debonding_balance not in [None, new_debonding_balance]:
             # Extracted data is in giga, therefore, to give more meaningful
             # alerts, the debonding balance will be scaled down.
-            threshold = scale_to_giga(self._change_in_debonding_balance_threshold)
+            threshold = scale_to_giga(
+                self._change_in_debonding_balance_threshold)
             scaled_new_bal = round(scale_to_nano(new_debonding_balance), 3)
             scaled_bal = round(scale_to_nano(self.debonding_balance), 3)
 
@@ -464,7 +472,8 @@ class Node:
         self._debonding_balance = new_debonding_balance
 
     def set_shares_balance(self, new_shares_balance: int, \
-            channels: ChannelSet, logger: logging.Logger) -> None:
+                           channels: ChannelSet,
+                           logger: logging.Logger) -> None:
 
         logger.debug(
             '%s set_shares_balance: before=%s, new=%s, channels=%s',
@@ -637,7 +646,7 @@ class Node:
         else:
 
             timestamp_difference = current_timestamp - \
-                self._time_of_last_height_change
+                                   self._time_of_last_height_change
 
             time_interval = strfdelta(timedelta(seconds=int(
                 timestamp_difference)), "{hours}h, {minutes}m, {seconds}s")
@@ -664,7 +673,7 @@ class Node:
                 self._time_of_last_height_check_activity = current_timestamp
                 self._finalized_height_alert_limiter. \
                     set_last_time_that_did_task(
-                        datetime.fromtimestamp(current_timestamp))
+                    datetime.fromtimestamp(current_timestamp))
 
     def add_missed_block(self, block_height: int, block_time: datetime,
                          missing_validators: int, channels: ChannelSet,
@@ -755,8 +764,8 @@ class Node:
                     escrow = event['escrow']['add']['escrow']
 
                     logger.debug('%s Node %s : Added %s tokens at height %s to '
-                                 '%s .', self, self.name, tokens, event_height,\
-                                    escrow)
+                                 '%s .', self, self.name, tokens, event_height, \
+                                 escrow)
                     channels.alert_info(EscrowAddEventSelfOwner(
                         self.name, tokens, event_height, escrow))
 
@@ -765,8 +774,8 @@ class Node:
                     owner = event['escrow']['add']['owner']
 
                     logger.debug('%s Node %s : Added %s tokens at height %s to '
-                                 '%s .', self, self.name, tokens, event_height,\
-                                    owner)
+                                 '%s .', self, self.name, tokens, event_height, \
+                                 owner)
                     channels.alert_info(EscrowAddEventSelfEscrow(
                         self.name, tokens, event_height, owner))
 
@@ -774,24 +783,24 @@ class Node:
             # delegated tokens from a validator
             elif self._check_dict_path(event, 'escrow', 'reclaim'):
                 if event['escrow']['reclaim']['owner'] == \
-                    self.entity_public_key:
+                        self.entity_public_key:
                     tokens = event['escrow']['reclaim']['tokens']
                     escrow = event['escrow']['reclaim']['escrow']
 
                     logger.debug('%s Node %s : reclaimed %s tokens at height %s'
                                  'to  %s .', self, self.name, tokens, \
-                                    event_height, escrow)
+                                 event_height, escrow)
                     channels.alert_info(EscrowReclaimEventSelfOwner(
                         self.name, tokens, event_height, escrow))
 
                 elif event['escrow']['reclaim']['escrow'] == \
-                    self.entity_public_key:
+                        self.entity_public_key:
                     tokens = event['escrow']['reclaim']['tokens']
                     owner = event['escrow']['reclaim']['owner']
 
                     logger.debug('%s Node %s : reclaimed %s tokens at height %s'
                                  'to  %s .', self, self.name, tokens, \
-                                    event_height, owner)
+                                 event_height, owner)
                     channels.alert_info(EscrowReclaimEventSelfEscrow(
                         self.name, tokens, event_height, owner))
 

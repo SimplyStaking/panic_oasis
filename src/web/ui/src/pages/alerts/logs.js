@@ -58,7 +58,7 @@ function LiveAlertsTableContent({ alerts }) {
       );
     }
     const severityColor = SEVERITY_COLOUR_REPRESENTATION[alerts[i].severity];
-    
+
     content.push(
       <tr key={i}>
         <td className="time-style">
@@ -81,9 +81,9 @@ function LiveAlertsTableContent({ alerts }) {
         >
           <td className="time-style">
             {moment.unix(alerts[i].timestamp).format('HH:mm:ss')}
-            
+
           </td>
-          
+
         </OverlayTrigger>
         <td>{alerts[i].message}</td>
       </tr>,
@@ -219,7 +219,7 @@ class AlertLogs extends Component {
       // Expect timestamp from Mongo in UTC.
       alerts.push(new Alert(alertJson.severity, alertJson.message,
         parseFloat(alertJson.timestamp)));
-      });
+    });
 
     this.setState({ alerts, totalPages, isFetchingData: false });
   }

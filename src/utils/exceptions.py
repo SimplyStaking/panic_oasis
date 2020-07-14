@@ -60,3 +60,21 @@ class NodeIsNotAnArchiveNodeException(Exception):
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
+
+
+class NoParametersGivenException(Exception):
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+
+
+class MetricNotFoundException(Exception):
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+
+
+class RequestCallFailedException(Exception):
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)

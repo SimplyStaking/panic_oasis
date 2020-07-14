@@ -42,14 +42,15 @@ function NodesTableContent({ nodesConfigJson, handleRemoveNode }) {
         {generateAddedTableValues(data.chain_name, false)}
         {generateAddedTableValues(data.node_api_url, false)}
         {generateAddedTableValues(data.node_public_key, false)}
-        {generateAddedTableValues(data.node_has_exporter, true)}
+        {generateAddedTableValues(data.node_exporter_url, false)}
         {generateAddedTableValues(data.monitor_node, true)}
         {generateAddedTableValues(data.use_as_data_source, true)}
         {generateAddedTableValues(data.is_archive_node, true)}
         {generateAddedTableValues(data.node_is_validator, true)}
         <td>
           <RemoveButton
-            itemKey={parseInt(node.substr(node.length - 1), 10)}
+            itemKey={parseInt(node.substr(node.indexOf('_') + 1, node.length),
+            10)}
             handleRemove={handleRemoveNode}
           />
         </td>
@@ -95,7 +96,8 @@ function NodesTable({ nodesConfigJson, handleRemoveNode }) {
 function NodesConfig({
   handleAddNode, handleChangeInNonBooleanField, handleChangeInBooleanField,
   currentNodeConfig, currentNodeIndex, validated, nodeNameValid, chainNameValid,
-  nodeAPIUrlValid, nodePubKeyValid, nodesConfigJson, handleRemoveNode,
+  nodeAPIUrlValid, nodePubKeyValid, nodeExporterUrlValid, nodesConfigJson,
+  handleRemoveNode,
 }) {
   return (
     <Container>
@@ -111,6 +113,7 @@ function NodesConfig({
         chainNameValid={chainNameValid}
         nodeAPIUrlValid={nodeAPIUrlValid}
         nodePubKeyValid={nodePubKeyValid}
+        nodeExporterUrlValid={nodeExporterUrlValid}
       />
       <NodesTable
         nodesConfigJson={nodesConfigJson}
@@ -149,6 +152,11 @@ class NodesSettingsPage extends Component {
   componentDidMount() {
     this.fetchNodesConfig();
     this.dataTimer = setInterval(this.fetchNodesConfig.bind(this), 5000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.dataTimer);
+    this.dataTimer = null;
   }
 
   async fetchNodesConfig() {
@@ -261,6 +269,12 @@ class NodesSettingsPage extends Component {
     return !fieldEmpty(state.currentNodeConfig.node_api_url);
   }
 
+  nodeExporterUrlValid() {
+    // Node exporter is optional therefore empty or not it is valid.
+    const { state } = this;
+    return true;
+  }
+
   nodePubKeyValid() {
     const { state } = this;
     // If node is not a validator, the stash field does not apply.
@@ -328,6 +342,7 @@ class NodesSettingsPage extends Component {
             chainNameValid={() => this.chainNameValid()}
             nodeAPIUrlValid={() => this.nodeAPIUrlValid()}
             nodePubKeyValid={() => this.nodePubKeyValid()}
+            nodeExporterUrlValid={() => this.nodeExporterUrlValid()}
           />
         )}
       />
@@ -351,6 +366,7 @@ NodesConfig.propTypes = forbidExtraProps({
   chainNameValid: PropTypes.func.isRequired,
   nodeAPIUrlValid: PropTypes.func.isRequired,
   nodePubKeyValid: PropTypes.func.isRequired,
+  nodeExporterUrlValid: PropTypes.func.isRequired,
   nodesConfigJson: PropTypes.objectOf(PropTypes.object).isRequired,
   handleRemoveNode: PropTypes.func.isRequired,
 });

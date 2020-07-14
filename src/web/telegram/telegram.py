@@ -10,12 +10,12 @@ from telegram.ext import CommandHandler, MessageHandler, Filters, \
 
 from src.alerters.reactive.node import Node
 from src.store.mongo.mongo_api import MongoApi
+from src.store.redis.redis_api import RedisApi
 from src.store.store_keys import *
 from src.utils.config_parsers.internal import InternalConfig
 from src.utils.config_parsers.internal_parsed import InternalConf
 from src.utils.config_parsers.user import UserConfig
 from src.utils.config_parsers.user_parsed import UserConf
-from src.store.redis.redis_api import RedisApi
 from src.utils.types import NONE
 from src.web.commands import Commands
 from src.web.telegram.telegram_handler import TelegramCommandHandler
@@ -24,12 +24,12 @@ from src.web.telegram.telegram_handler import TelegramCommandHandler
 class TelegramCommands(Commands):
 
     def __init__(self, bot_token: str, authorised_chat_id: str,
-                logger: logging.Logger, redis: Optional[RedisApi],
-                mongo: Optional[MongoApi],
-                node_monitor_nodes_by_chain: Dict[str, List[Node]],
-                archive_alerts_disabled_by_chain: Dict[str, bool],
-                internal_conf: InternalConfig = InternalConf,
-                user_conf: UserConfig = UserConf) -> None:
+                 logger: logging.Logger, redis: Optional[RedisApi],
+                 mongo: Optional[MongoApi],
+                 node_monitor_nodes_by_chain: Dict[str, List[Node]],
+                 archive_alerts_disabled_by_chain: Dict[str, bool],
+                 internal_conf: InternalConfig = InternalConf,
+                 user_conf: UserConfig = UserConf) -> None:
 
         super().__init__(logger, redis, mongo, node_monitor_nodes_by_chain,
                          archive_alerts_disabled_by_chain,
@@ -286,7 +286,8 @@ class TelegramCommands(Commands):
         # Add Twilio calls snooze state to status if Twilio enabled
         if self._user_conf.twilio_alerts_enabled:
             if self._redis.exists(Keys.get_twilio_snooze()):
-                until = self._redis.get(Keys.get_twilio_snooze()).decode("utf-8")
+                until = self._redis.get(Keys.get_twilio_snooze()).decode(
+                    "utf-8")
                 status += '- Twilio calls are snoozed until {}.\n'.format(until)
             else:
                 status += '- Twilio calls are not snoozed.\n'
@@ -300,7 +301,7 @@ class TelegramCommands(Commands):
                           'been muted until {}.\n'.format(until)
             else:
                 status += '- The periodic alive reminder is not muted.\n'
-        
+
         # Add node monitor latest updates to status
         # TODO: consider getting nodes from config
         node_monitor_keys_list = self._redis.get_keys(
@@ -325,6 +326,22 @@ class TelegramCommands(Commands):
                 if last_height_checked != NONE:
                     status += '- *{}* is currently in block height {}.\n' \
                         .format(nmn, last_height_checked)
+
+        # Add system monitor latest updates to status
+        system_monitor_keys_list = self._redis.get_keys(
+            Keys.get_system_monitor_alive("*"))
+        system_monitor_names = [
+            k.replace(Keys.get_system_monitor_alive(""), '')
+            for k in system_monitor_keys_list
+        ]
+        for key, name in zip(system_monitor_keys_list,
+                             system_monitor_names):
+            status += self._get_monitor_last_update(key, name)
+
+        # Add note if no latest system monitor updates
+        if len(system_monitor_keys_list) == 0:
+            status += '- No recent update from system monitors.\n'
+
         return status
 
     def _status_callback(self, update: Update, context: CallbackContext):
@@ -337,7 +354,7 @@ class TelegramCommands(Commands):
         # Start forming the status message
         status = ""
         update.message.reply_text('Generating status...')
-        
+
         # Add mongo-based status if it is enabled and running
         if not self._user_conf.mongo_enabled:
             status += '- Mongo-based status update is not available given ' \
@@ -367,7 +384,6 @@ class TelegramCommands(Commands):
         TelegramCommands.formatted_reply(
             update, status[:-1] if status.endswith('\n') else status)
 
-
     def _get_mongo_based_status(self):
         status = ""
 
@@ -380,8 +396,6 @@ class TelegramCommands(Commands):
             status += '- Mongo is running normally.\n'
 
         return status
-
-
 
     def _validators_callback(self, update: Update, context: CallbackContext):
         self._logger.info('/validators: update=%s, context=%s', update, context)
@@ -397,7 +411,7 @@ class TelegramCommands(Commands):
             '  OasisStakes: {}\n'.format(
                 self._internal_conf.validators_oasis_link,
                 self._internal_conf.validators_oasisstake_link))
-    
+
     def _help_callback(self, update: Update, context: CallbackContext):
         self._logger.info('/help: update=%s, context=%s', update, context)
 

@@ -80,6 +80,28 @@ class AlertCode(Enum):
     SharesBalanceDecreasedAlert = _next_id(),
     SharesBalanceIncreasedByAlert = _next_id(),
     SharesBalanceDecreasedByAlert = _next_id(),
+    NewProcessCPUSecondsTotalAlert = _next_id(),
+    MemoryUsageIncreasedAlert = _next_id(),
+    MemoryUsageDecreasedAlert = _next_id(),
+    MemoryUsageIncreasedInsideDangerRangeAlert = _next_id(),
+    MemoryUsageIncreasedInsideWarningRangeAlert = _next_id(),
+    NewVirtualMemoryUsageAlert = _next_id(),
+    OpenFileDescriptorsIncreasedAlert = _next_id(),
+    OpenFileDescriptorsDecreasedAlert = _next_id(),
+    OpenFileDescriptorsIncreasedInsideDangerRangeAlert = _next_id(),
+    OpenFileDescriptorsIncreasedInsideWarningRangeAlert = _next_id(),
+    SystemCPUUsageIncreasedAlert = _next_id(),
+    SystemCPUUsageDecreasedAlert = _next_id(),
+    SystemCPUUsageIncreasedInsideDangerRangeAlert = _next_id(),
+    SystemCPUUsageIncreasedInsideWarningRangeAlert = _next_id(),
+    SystemRAMUsageIncreasedAlert = _next_id(),
+    SystemRAMUsageDecreasedAlert = _next_id(),
+    SystemRAMUsageIncreasedInsideDangerRangeAlert = _next_id(),
+    SystemRAMUsageIncreasedInsideWarningRangeAlert = _next_id(),
+    SystemStorageUsageIncreasedAlert = _next_id(),
+    SystemStorageUsageDecreasedAlert = _next_id(),
+    SystemStorageUsageIncreasedInsideDangerRangeAlert = _next_id(),
+    SystemStorageUsageIncreasedInsideWarningRangeAlert = _next_id(),
 
 
 class Alert:
@@ -115,6 +137,7 @@ class FoundLiveArchiveNodeAgainAlert(Alert):
             AlertCode.FoundLiveArchiveNodeAgainAlert,
             '{} found an archive node. This means that archive monitoring '
             '(which includes slashing) is now enabled.'.format(monitor))
+
 
 class NodeWasNotConnectedToApiServerAlert(Alert):
 
@@ -184,6 +207,7 @@ class CouldNotFindLiveArchiveNodeConnectedToApiServerAlert(Alert):
             'require data from previous blocks. Other functionality will '
             'continue running normally.'.format(monitor))
 
+
 class NodeInaccessibleDuringStartup(Alert):
 
     def __init__(self, node: str) -> None:
@@ -192,6 +216,7 @@ class NodeInaccessibleDuringStartup(Alert):
             'Node {} was not accessible during PANIC startup. {} will NOT be '
             'monitored until it is accessible and PANIC restarted afterwards. '
             'Some features of PANIC might be affected.'.format(node, node))
+
 
 class BondedBalanceIncreasedAlert(Alert):
 
@@ -526,7 +551,9 @@ class TokensTransferedToAlert(Alert):
         super().__init__(
             AlertCode.TokensTransferedToAlert,
             '{} transfered {} tokens to {} at height: {} .'.format(node,
-                    tokens, address, height))
+                                                                   tokens,
+                                                                   address,
+                                                                   height))
 
 
 class TokensTransferedFromAlert(Alert):
@@ -536,7 +563,9 @@ class TokensTransferedFromAlert(Alert):
         super().__init__(
             AlertCode.TokensTransferedFromAlert,
             '{} transfered {} tokens from {} at height: {} .'.format(node,
-                tokens, address, height))
+                                                                     tokens,
+                                                                     address,
+                                                                     height))
 
 
 class EscrowAddEventSelfOwner(Alert):
@@ -670,3 +699,208 @@ class SharesBalanceDecreasedByAlert(Alert):
             AlertCode.SharesBalanceDecreasedByAlert,
             '{} total shares balance DECREASED by {} from {} to {}.'.format(
                 node, change, old_balance, new_balance))
+
+
+class NewProcessCPUSecondsTotalAlert(Alert):
+
+    def __init__(self, node: str, cpu_seconds: float) -> None:
+        super().__init__(
+            AlertCode.NewProcessCPUSecondsTotalAlert,
+            '{} new process CPU seconds total {}.'.format(
+                node, cpu_seconds))
+
+
+class MemoryUsageIncreasedAlert(Alert):
+
+    def __init__(self, node: str, old_memory: float, new_memory: float) \
+            -> None:
+        super().__init__(
+            AlertCode.MemoryUsageIncreasedAlert,
+            '{} memory usage INCREASED from {}% to {}%.'.format(
+                node, old_memory, new_memory))
+
+
+class MemoryUsageDecreasedAlert(Alert):
+
+    def __init__(self, node: str, old_memory: int, new_memory: int) -> None:
+        super().__init__(
+            AlertCode.MemoryUsageDecreasedAlert,
+            '{} memory usage DECREASED from {}% to {}%.'.format(
+                node, old_memory, new_memory))
+
+
+class MemoryUsageIncreasedInsideDangerRangeAlert(Alert):
+
+    def __init__(self, node: str, new_memory: int, danger: int) -> None:
+        super().__init__(
+            AlertCode.MemoryUsageIncreasedInsideDangerRangeAlert,
+            '{} memory usage Increased to {}%. Above the danger boundary {}%.'
+            ''.format(node, new_memory, danger))
+
+
+class MemoryUsageIncreasedInsideWarningRangeAlert(Alert):
+
+    def __init__(self, node: str, new_memory: int, safe: int) -> None:
+        super().__init__(
+            AlertCode.MemoryUsageIncreasedInsideWarningRangeAlert,
+            '{} memory usage Increased to {}%. Above the safe boundary {}%.'
+            ''.format(node, new_memory, safe))
+
+
+class NewVirtualMemoryUsageAlert(Alert):
+
+    def __init__(self, node: str, memory: float) -> None:
+        super().__init__(
+            AlertCode.NewVirtualMemoryUsageAlert,
+            '{} new virtual memory usage {}.'.format(
+                node, memory))
+
+
+class OpenFileDescriptorsIncreasedAlert(Alert):
+
+    def __init__(self, node: str, old_ofds: float, new_ofds: float) \
+            -> None:
+        super().__init__(
+            AlertCode.OpenFileDescriptorsIncreasedAlert,
+            '{} open file descriptors INCREASED from {}% to {}%.'.format(
+                node, old_ofds, new_ofds))
+
+
+class OpenFileDescriptorsDecreasedAlert(Alert):
+
+    def __init__(self, node: str, old_ofds: int, new_ofds: int) -> None:
+        super().__init__(
+            AlertCode.OpenFileDescriptorsDecreasedAlert,
+            '{} open file descriptors DECREASED from {}% to {}%.'.format(
+                node, old_ofds, new_ofds))
+
+
+class OpenFileDescriptorsIncreasedInsideDangerRangeAlert(Alert):
+
+    def __init__(self, node: str, new_ofds: int, danger: int) -> None:
+        super().__init__(
+            AlertCode.OpenFileDescriptorsIncreasedInsideDangerRangeAlert,
+            '{} open file descriptors Increased to {}%. Above the danger '
+            'boundary {}%.'.format(node, new_ofds, danger))
+
+
+class OpenFileDescriptorsIncreasedInsideWarningRangeAlert(Alert):
+
+    def __init__(self, node: str, new_ofds: int, safe: int) -> None:
+        super().__init__(
+            AlertCode.OpenFileDescriptorsIncreasedInsideWarningRangeAlert,
+            '{} open file descriptors Increased to {}%. Above the safe '
+            'boundary {}%.'.format(node, new_ofds, safe))
+
+
+class SystemCPUUsageIncreasedAlert(Alert):
+
+    def __init__(self, node: str, old_cpu_usage: float, new_cpu_usage: float) \
+            -> None:
+        super().__init__(
+            AlertCode.SystemCPUUsageIncreasedAlert,
+            '{} system CPU usage INCREASED from {}% to {}%.'.format(
+                node, old_cpu_usage, new_cpu_usage))
+
+
+class SystemCPUUsageDecreasedAlert(Alert):
+
+    def __init__(self, node: str, old_cpu_usage: float, new_cpu_usage: float) \
+            -> None:
+        super().__init__(
+            AlertCode.SystemCPUUsageDecreasedAlert,
+            '{} system CPU usage DECREASED from {}% to {}%.'.format(
+                node, old_cpu_usage, new_cpu_usage))
+
+
+class SystemCPUUsageIncreasedInsideDangerRangeAlert(Alert):
+
+    def __init__(self, node: str, new_cpu_usage: int, danger: int) -> None:
+        super().__init__(
+            AlertCode.SystemCPUUsageIncreasedInsideDangerRangeAlert,
+            '{} system CPU usage Increased  to {}%. Above the danger boundary '
+            '{}%.'.format(node, new_cpu_usage, danger))
+
+
+class SystemCPUUsageIncreasedInsideWarningRangeAlert(Alert):
+
+    def __init__(self, node: str, new_cpu_usage: int, safe: int) -> None:
+        super().__init__(
+            AlertCode.SystemCPUUsageIncreasedInsideWarningRangeAlert,
+            '{} system CPU usage Increased to {}%. Above the safe boundary {}%.'
+            ''.format(node, new_cpu_usage, safe))
+
+
+class SystemRAMUsageIncreasedAlert(Alert):
+
+    def __init__(self, node: str, old_ram_usage: float, new_ram_usage: float) \
+            -> None:
+        super().__init__(
+            AlertCode.SystemRAMUsageIncreasedAlert,
+            '{} system RAM usage INCREASED from {}% to {}%.'.format(
+                node, old_ram_usage, new_ram_usage))
+
+
+class SystemRAMUsageDecreasedAlert(Alert):
+
+    def __init__(self, node: str, old_ram_usage: float, new_ram_usage: float) \
+            -> None:
+        super().__init__(
+            AlertCode.SystemRAMUsageDecreasedAlert,
+            '{} system RAM usage DECREASED from {}% to {}%.'.format(
+                node, old_ram_usage, new_ram_usage))
+
+
+class SystemRAMUsageIncreasedInsideDangerRangeAlert(Alert):
+
+    def __init__(self, node: str, new_ram_usage: int, danger: int) -> None:
+        super().__init__(
+            AlertCode.SystemRAMUsageIncreasedInsideDangerRangeAlert,
+            '{} system RAM usage Increased  to {}%. Above the danger boundary '
+            '{}%.'.format(node, new_ram_usage, danger))
+
+
+class SystemRAMUsageIncreasedInsideWarningRangeAlert(Alert):
+
+    def __init__(self, node: str, new_ram_usage: int, safe: int) -> None:
+        super().__init__(
+            AlertCode.SystemRAMUsageIncreasedInsideWarningRangeAlert,
+            '{} system RAM usage Increased to {}%. Above the safe boundary {}%.'
+            ''.format(node, new_ram_usage, safe))
+
+
+class SystemStorageUsageIncreasedAlert(Alert):
+
+    def __init__(self, node: str, old_storage: float, new_storage: float) \
+            -> None:
+        super().__init__(
+            AlertCode.SystemStorageUsageIncreasedAlert,
+            '{} system storage usage INCREASED from {}% to {}%.'.format(
+                node, old_storage, new_storage))
+
+
+class SystemStorageUsageDecreasedAlert(Alert):
+
+    def __init__(self, node: str, old_storage: int, new_storage: int) -> None:
+        super().__init__(
+            AlertCode.SystemStorageUsageDecreasedAlert,
+            '{} system storage usage DECREASED from {}% to {}%.'.format(
+                node, old_storage, new_storage))
+
+
+class SystemStorageUsageIncreasedInsideDangerRangeAlert(Alert):
+
+    def __init__(self, node: str, new_storage_usage: int, danger: int) -> None:
+        super().__init__(
+            AlertCode.SystemStorageUsageIncreasedInsideDangerRangeAlert,
+            '{} system storage usage Increased  to {}%. Above the danger '
+            'boundary {}%.'.format(node, new_storage_usage, danger))
+
+
+class SystemStorageUsageIncreasedInsideWarningRangeAlert(Alert):
+
+    def __init__(self, node: str, new_storage_usage: int, safe: int) -> None:
+        super().__init__(
+            AlertCode.SystemStorageUsageIncreasedInsideWarningRangeAlert,
+            '{} system storage usage Increased to {}%. Above the safe boundary '
+            '{}%.'.format(node, new_storage_usage, safe))

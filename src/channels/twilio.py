@@ -4,9 +4,9 @@ from typing import Optional, List
 from src.alerts.alerts import Alert, \
     ProblemWhenCheckingIfCallsAreSnoozedAlert, ProblemWhenDialingNumberAlert
 from src.channels.channel import Channel, ChannelSet
+from src.store.redis.redis_api import RedisApi
 from src.store.store_keys import Keys
 from src.utils.alert_utils.twilio_api import TwilioApi
-from src.store.redis.redis_api import RedisApi
 
 
 class TwilioChannel(Channel):

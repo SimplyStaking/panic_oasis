@@ -25,6 +25,18 @@ _key_node_shares_balance = "n14"
 _key_node_monitor_alive = "nm1"
 _key_node_monitor_last_height_checked = "nm2"
 
+# sX_<node_name>
+_key_system_get_process_cpu_seconds_total = "s1"
+_key_system_get_process_memory_usage = "s2"
+_key_system_get_virtual_memory_usage = "s3"
+_key_system_get_open_file_descriptors = "s4"
+_key_system_get_system_cpu_usage = "s5"
+_key_system_get_system_ram_usage = "s6"
+_key_system_get_system_storage_usage = "s7"
+
+# smX_<monitor_name>
+_key_system_monitor_alive = "sm1"
+
 # ghX_<repo_name>
 _key_github_releases = "gh1"
 
@@ -112,6 +124,38 @@ class Keys:
     @staticmethod
     def get_node_monitor_last_height_checked(monitor_name: str) -> str:
         return _as_prefix(_key_node_monitor_last_height_checked) + monitor_name
+
+    @staticmethod
+    def get_system_get_process_cpu_seconds_total(node_name: str) -> str:
+        return _as_prefix(_key_system_get_process_cpu_seconds_total) + node_name
+
+    @staticmethod
+    def get_system_get_process_memory_usage(node_name: str) -> str:
+        return _as_prefix(_key_system_get_process_memory_usage) + node_name
+
+    @staticmethod
+    def get_system_get_virtual_memory_usage(node_name: str) -> str:
+        return _as_prefix(_key_system_get_virtual_memory_usage) + node_name
+
+    @staticmethod
+    def get_system_get_open_file_descriptors(node_name: str) -> str:
+        return _as_prefix(_key_system_get_open_file_descriptors) + node_name
+
+    @staticmethod
+    def get_system_get_system_cpu_usage(node_name: str) -> str:
+        return _as_prefix(_key_system_get_system_cpu_usage) + node_name
+
+    @staticmethod
+    def get_system_get_system_ram_usage(node_name: str) -> str:
+        return _as_prefix(_key_system_get_system_ram_usage) + node_name
+
+    @staticmethod
+    def get_system_get_system_storage_usage(node_name: str) -> str:
+        return _as_prefix(_key_system_get_system_storage_usage) + node_name
+
+    @staticmethod
+    def get_system_monitor_alive(monitor_name: str) -> str:
+        return _as_prefix(_key_system_monitor_alive) + monitor_name
 
     @staticmethod
     def get_github_releases(repo_name: str) -> str:

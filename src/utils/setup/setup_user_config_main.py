@@ -1,7 +1,7 @@
-from configparser import ConfigParser
 from datetime import timedelta
 
-from src.utils.data_wrapper.oasis_api import OasisApiWrapper
+from configparser import ConfigParser
+
 from src.utils.datetime import strfdelta
 from src.utils.setup.setup_user_config_main_tests import *
 from src.utils.user_input import yn_prompt

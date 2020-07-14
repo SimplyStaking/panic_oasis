@@ -7,8 +7,7 @@ import requests
 from src.utils.exceptions import ApiCallFailedException, \
     UnexpectedApiCallErrorException, NodeWasNotConnectedToApiServerException, \
     UnexpectedApiErrorWhenReadingDataException, \
-    ConnectionWithNodeApiLostException, InvalidConsensusPublicKeyException, \
-    NodeIsNotAnArchiveNodeException
+    ConnectionWithNodeApiLostException, InvalidConsensusPublicKeyException
 
 
 def get_json(endpoint: str, logger: logging.Logger, params=None):
@@ -30,14 +29,15 @@ def get_oasis_json(endpoint: str, params: Dict, logger: logging.Logger,
         # Error means that the Node is not connected to the API.
         if 'API call {} failed.'.format(api_call) in data['error']:
             raise ApiCallFailedException(data['error'])
-        elif 'Node name requested doesn\'t exist'  in data['error']:
+        elif 'Node name requested doesn\'t exist' in data['error']:
             raise NodeWasNotConnectedToApiServerException(data['error'])
         elif 'Error: API call {} failed.'.format(api_call) in data['error']:
             raise ApiCallFailedException(data['error'])
         elif 'An API for ' + params['name'] + \
                 ' needs to be setup before it can be queried' in data['error']:
             raise NodeWasNotConnectedToApiServerException(data['error'])
-        elif 'Failed to ping node by retrieving highest block height!' in data['error']:
+        elif 'Failed to ping node by retrieving highest block height!' in data[
+            'error']:
             raise ConnectionWithNodeApiLostException(data['error'])
         elif 'Failed to Unmarshal Public Key' in data['error']:
             raise InvalidConsensusPublicKeyException(

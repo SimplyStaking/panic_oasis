@@ -136,7 +136,6 @@ function RedisForm({
         <div>
           <Form.Control
             type="password"
-            placeholder=""
             disabled={!toBool(mainUserConfigJson.redis.enabled)}
             onChange={
               event => handleChangeInNonBooleanField(event, 'redis', 'password')

@@ -2,9 +2,9 @@ import logging
 from typing import Optional, List
 
 from src.alerts.alerts import Alert, SeverityCode
+from src.store.redis.redis_api import RedisApi
 from src.utils.config_parsers.internal import InternalConfig
 from src.utils.config_parsers.internal_parsed import InternalConf
-from src.store.redis.redis_api import RedisApi
 
 
 class Channel:

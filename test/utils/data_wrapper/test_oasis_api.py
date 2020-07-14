@@ -15,7 +15,7 @@ GET_OASIS_JSON_FUNCTION = \
 
 
 def api_mock_generator(expected_endpoint: str, expected_params: Dict,
-                       expected_api_call: str):
+                    expected_api_call: str):
 
     def api_mock(endpoint: str, params: Dict, _, api_call: str = ''):
         print(endpoint)
@@ -187,8 +187,8 @@ class TestOasisApi(unittest.TestCase):
         api_call = ''
         self.params = {'name': self.node_name}
         mock.side_effect = api_mock_generator(endpoint, self.params, api_call)
-        self.assertTrue(self.wrapper.ping_node(self.api_endpoint, \
-            self.node_name))
+        self.assertTrue(self.wrapper.ping_node(self.api_endpoint,
+                                               self.node_name))
     
     @patch(GET_OASIS_JSON_FUNCTION)
     def test_get_staking_account(self, mock):
@@ -221,7 +221,7 @@ class TestOasisApi(unittest.TestCase):
         self.wrapper.set_api_as_down("", False, self.channel_set)
         self.assertEqual(1, self.counter_channel.warning_count)
         self.assertIsInstance(self.counter_channel.latest_alert,
-                              ApiIsDownAlert)
+                            ApiIsDownAlert)
 
     def test_set_api_as_down_produces_no_error_alert_if_api_down_for_non_val_monitors(
             self) -> None:

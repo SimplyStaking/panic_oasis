@@ -128,6 +128,11 @@ class MainSettingsPage extends Component {
     this.dataTimer = setInterval(this.fetchMainUserConfig.bind(this), 5000);
   }
 
+  componentWillUnmount() {
+    clearInterval(this.dataTimer);
+    this.dataTimer = null;
+  }
+
   async fetchMainUserConfig() {
     let response;
     try {

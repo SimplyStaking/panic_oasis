@@ -1,13 +1,13 @@
 from enum import Enum
 
+from src.store.mongo.mongo_api import MongoApi
+from src.store.redis.redis_api import RedisApi
 from src.utils.alert_utils.email_sending import EmailSender
 from src.utils.alert_utils.telegram_bot_api import TelegramBotApi
 from src.utils.alert_utils.twilio_api import TwilioApi
 from src.utils.config_parsers.internal import InternalConfig
 from src.utils.config_parsers.internal_parsed import InternalConf
 from src.utils.logging import DUMMY_LOGGER
-from src.store.mongo.mongo_api import MongoApi
-from src.store.redis.redis_api import RedisApi
 from src.utils.user_input import yn_prompt
 from src.web.telegram.telegram_handler import TelegramCommandHandler
 

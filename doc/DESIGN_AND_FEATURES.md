@@ -5,7 +5,7 @@ This page will present the inner workings of the alerter as well as the features
 - [**Design**](#design)
 - [**Alerting Channels**](#alerting-channels): (console, logging, Telegram, email, Twilio, database)
 - [**Alert Types**](#alert-types): (critical, warning, info, error)
-- [**Monitor Types**](#monitor-types): (node, GitHub)
+- [**Monitor Types**](#monitor-types): (node, system, GitHub)
 - [**Periodic Alive Reminder**](#periodic-alive-reminder)
 - [**Telegram Commands**](#telegram-commands)
 - [**Web UI**](#web-ui)
@@ -57,6 +57,7 @@ Note that for more advanced users, the alerts internal config file (`config/inte
 An aspect of the design of PANIC that is less visible to the user is that there are multiple monitor types. Once PANIC is started it detects the number of nodes and which chain(s) they belong to, and automatically launches the necessary number of monitors of each type.
 
 - **Node monitor** (one per node): deals with node-specific details such as bonded balance and number of peers.
+- **Sytem monitor** (one per node): deals with system-specific details such as changes in CPU/RAM/Storage usage.
 - **GitHub monitor** (one per repository): uses the GitHub API to keep track of the number of releases in a repository and alerts on a new release.
 
 Each monitor passes on the data that it extracts to the respective alerter. For example, the node monitor passes on its data to the node alerter. The alerter's task is then to keep track of changes in the data to figure out whether or not it should notify the user.
@@ -130,6 +131,37 @@ After performing all types of monitoring, the node monitor concludes by doing th
 Default value:
 - `MCUB = node_monitor_max_catch_up_blocks = 500`
 
+### System Monitor
+
+The system monitor monitors the state of exactly one machine. Therefore, if `n` Node Exporter URLs are given to PANIC, `n` system monitors will start. The Node Exporter URL can be set in the `node_exporter_url` field for the node which's system needs to be monitored in the `config/user_config_nodes.ini` config file.
+
+It is important to note that a system monitor does not start up if there is no Node Exporter URL given in the config. Another important note on URL availability is that if the URL is not accessible in a monitoring round, a CRITICAL alert is raised because data could not be obtained.
+
+In a typical monitoring round, the system monitor does the following:
+
+1. Gets the prometheus data from the Node Exporter URL.
+    1. Builds a dictionary with the key-value pairs of the extracted elements.
+    2. Extracts process_cpu_seconds_total.
+    3. Extracts go_memstats_alloc_bytes.
+    4. Extracts go_memstats_alloc_bytes_total.
+    5. Extracts process_virtual_memory_bytes.
+    6. Extracts process_max_fds.
+    7. Extracts process_open_fds.
+    8. Extracts node_cpu_seconds_total.
+    9. Extracts node_filesystem_avail_bytes.
+    10. Extracts node_filesystem_size_bytes.
+    11. Extracts node_memory_MemTotal_bytes.
+    12. Extracts node_memory_MemAvailable_bytes.
+2. The data extracted is then processes as needed and stored in the system.
+    1. Store process_cpu_seconds_total and alert accordingly
+    2. Store process_memory_usage = ((go_memstats_alloc_bytes / go_memstats_alloc_bytes_total)*100) and alert accordingly
+    3. Store process_virtual_memory_bytes and alert accordingly
+    4. Store open_file_descriptors = ((process_open_fds/process_max_fds) * 100) and alert accordingly
+    5. Store system_cpu_usage = (100 - ((SUMOFALL(node_cpu_seconds_idle) / SUMOFALL(node_cpu_seconds_total)) * 100)) and alert accordingly
+    6. Store system_ram_usage = (((node_memory_MemTotal_bytes- node_memory_MemAvailable_bytes)/node_memory_MemTotal_bytes) * 100) and alert accordingly
+    7. Store system_storage_usage = (100 - ((SUMOFALL(node_filesystem_avail_bytes) / SUMOFALL(node_filesystem_size_bytes)) * 100)) and alert accordingly
+3. Saves its state to Redis
+4. Sleeps until the next monitoring round
 
 ### GitHub Monitor
 
@@ -148,7 +180,7 @@ The periodic alive reminder is a way for PANIC to inform the operator that it is
 
 The following are some important points about the periodic alive reminder:
 
-1. The time after which a reminder is sent can be specified by the operator using the setup process described [here](SETUP.md).
+1. The time after which a reminder is sent can be specified by the operator using the setup process described [here](./SETUP_ALERTER.md).
 2. The periodic alive reminder can be muted and unmuted using Telegram as discussed below.
 
 ## User Interfaces
@@ -199,6 +231,14 @@ Included in the alerter state stored in Redis are:
 - **For each node monitor:**
     - Last update time (to know that the monitor is still running)
     - The last height checked in archive monitoring
+- **For each system:**
+    - process_cpu_seconds_total
+    - process_memory_usage
+    - virtual_memory_usage
+    - open_file_descriptors
+    - system_cpu_usage
+    - system_ram_usage
+    - system_storage_usage
 - **For each GitHub repository:**
     - Number of releases
 - **Unique keys:**
@@ -240,8 +280,7 @@ Notes:
 
 A complete list of alerts will now be presented. These are grouped into sections so that they can be understood more easily. For each alert, the severity and whether it is configurable from the config files is also included.
 
-Note that for more advanced users, the alerts internal config file (`config/internal_config_alerts.ini`) also lists all of the possible alerts and allows users to disable specific alerts manually.
-<!-- TODO: add more info once config UI is usable -->
+Note that for more advanced users, the alerts internal config file (`config/internal_config_alerts.ini`) also lists all of the possible alerts and allows users to disable specific alerts as discussed [here](./SETUP_ALERTER.md#advanced-configuration).
 
 ### Access to Nodes
 
@@ -316,16 +355,19 @@ Default values:
 | `SharesBalanceIncreasedByAlert` | `INFO` | ✓ |
 | `SharesBalanceDecreasedByAlert` | `INFO` | ✓ |
 
-
 ### Number of Peers
 
 Alerts for changes in the number of peers range from info to critical.
+
 #### For Validator Nodes
+
 - Any decrease to `N` peers inside a configurable danger boundary `D1` is a critical alert (i.e. `N <= D1`). 
 - Any decrease to `N` peers inside a configurable safe boundary `S1` is a warning alert (i.e. `D1 < N <= S1`).
 - Any increase to `N` peers inside a configurable safe/danger boundary `S1`/`D1` raises an info alert (i.e. `N <= S1/D1`)
 - When the number of peers `N` exceeds `S1`, the operator is notified with a one time info alert to not expect any further alerts if the number of peers remains greater than `S1` irrespective of an increase or decrease.
-#### For Non-Validator Nodes 
+
+#### For Non-Validator Nodes
+ 
 - Any decrease to `N` peers inside a configurable danger boundary `D2` raises a warning alert (i.e. `N <= D2`). Otherwise, any other decreases raises no alerts.
 - Any increase to `N` peers inside a configurable danger boundary `D2` raises an info alert (i.e. `N <= D2`). Otherwise, any other increase raises no alerts.
 - When the number of peers `N` exceeds `D2`, the operator is notified with a one time info alert to not expect any further alerts if the number of peers remains greater than `D2` irrespective of an increase or decrease.
@@ -436,6 +478,110 @@ Default values:
 | `NodeFinalizedBlockHeightDidNotChangeInAlert` | `WARNING/CRITICAL` | ✓ |
 | `NodeFinalizedBlockHeightHasNowBeenUpdatedAlert` | `INFO` | ✗ |
 
+### System
+
+System alerts inform the user of events related to the machine that the node is running on and not the node itself. These alerts are further divided into seven types.
+
+#### Process CPU Seconds Total
+
+This metric is an informative one which shows the total user and system CPU time spent in seconds. It's alerts are only `INFO` based. The suggestion is to disable the alerting for this metric as it's spammy. The data is there to be shown on the UI.
+
+| Class | Severity | Configurable |
+|---|---|---|
+| `NewProcessCPUSecondsTotalAlert` | `INFO` | X |
+
+#### Process Memory Usage
+
+This metric is made up out of two other extracted metrics `go_memstats_alloc_bytes` and `go_memstats_alloc_bytes_total` which are used to measure the amount of allocated bytes in the process memory and the total available bytes in the process memory. The equation used to determine the percentage usage of process memory is : process_memory_usage = ((go_memstats_alloc_bytes / go_memstats_alloc_bytes_total)*100) the percentage is the stored in redis up to 2 decimal places. The alerts are based on thresholds, there are two types of thresholds depending on what node resides on the machine, a validator node has a lower threshold for alerting than a full node. These can be set inside `internal_config_main.ini`. 
+
+Default values:
+- `VD = validator_process_memory_usage_danger_boundary = 80`
+- `VS = validator_process_memory_usage_safe_boundary = 40`
+- `ND = node_process_memory_usage_danger_boundary = 90`
+- `NS = node_process_memory_usage_safe_boundary = 70`
+
+| Class | Severity | Configurable |
+|---|---|---|
+| `MemoryUsageIncreasedAlert` | `INFO` | X |
+| `MemoryUsageDecreasedAlert` | `INFO/CRITICAL` | X |
+| `MemoryUsageIncreasedInsideDangerRangeAlert` | `CRITICAL` | X |
+| `MemoryUsageIncreasedInsideWarningRangeAlert` | `WARNING` | X |
+
+#### Virtual Memory Usage
+
+This metric is an informative one which shows the virtual memory being used by the system. Virtual memory uses a section of the hard drive to emulate RAM, this allows for a system to load larger programs. It's alerts are only `INFO` based. The suggestion is to disable the alerting for this metric as it's spammy. The data is there to be shown on the UI.
+
+| Class | Severity | Configurable |
+|---|---|---|
+| `NewVirtualMemoryUsageAlert` | `INFO` | X |
+
+#### Open File Descriptors
+
+This metric is made up out of two other extracted metrics `process_open_fds` and `process_max_fds` which are used to measure the percentage of open file descriptors that are open. The equation used to determine the percentage usage of open file descriptors is : open_file_descriptors = ((process_open_fds/process_max_fds) * 100) the percentage is the stored in redis up to 2 decimal places. The alerts are based on thresholds, there are two types of thresholds depending on what node resides on the machine, a validator node has a lower threshold for alerting than a full node. These can be set inside `internal_config_main.ini`. 
+
+Default values:
+- `VD = validator_open_file_descriptors_danger_boundary = 80`
+- `VS = validator_open_file_descriptors_safe_boundary = 40`
+- `ND = node_open_file_descriptors_danger_boundary = 90`
+- `NS = node_open_file_descriptors_safe_boundary = 70`
+
+| Class | Severity | Configurable |
+|---|---|---|
+| `OpenFileDescriptorsIncreasedAlert` | `INFO` | X |
+| `OpenFileDescriptorsDecreasedAlert` | `INFO/CRITICAL` | X |
+| `OpenFileDescriptorsIncreasedInsideDangerRangeAlert` | `CRITICAL` | X |
+| `OpenFileDescriptorsIncreasedInsideWarningRangeAlert` | `WARNING` | X |
+
+#### System CPU Usage
+
+This metric is made up out of `node_cpu_seconds_total`, this metric has different modes. The mode which is important is `idle` which represents the `idle` usage of each CPU core. All the `idle` seconds are added up, all the other modes are also been added up including `idle` to get the total CPU seconds. To measure the percentage of the system cpu usage this equation is used : system_cpu_usage = (100 - ((`node_cpu_seconds_idle` / `node_cpu_seconds_total`) * 100)) the percentage is the stored in redis up to 2 decimal places. The alerts are based on thresholds, there are two types of thresholds depending on what node resides on the machine, a validator node has a lower threshold for alerting than a full node. These can be set inside `internal_config_main.ini`. 
+
+Default values:
+- `VD = validator_system_cpu_usage_danger_boundary = 80`
+- `VS = validator_system_cpu_usage_safe_boundary = 40`
+- `ND = node_system_cpu_usage_danger_boundary = 90`
+- `NS = node_system_cpu_usage_safe_boundary = 70`
+
+| Class | Severity | Configurable |
+|---|---|---|
+| `SystemCPUUsageIncreasedAlert` | `INFO` | X |
+| `SystemCPUUsageDecreasedAlert` | `INFO/CRITICAL` | X |
+| `SystemCPUUsageIncreasedInsideDangerRangeAlert` | `CRITICAL` | X |
+| `SystemCPUUsageIncreasedInsideWarningRangeAlert` | `WARNING` | X |
+
+#### System RAM Usage
+
+This metric is made up out of two other extracted metrics `node_memory_MemTotal_bytes` and `node_memory_MemAvailable_bytes` which are used to measure the percentage of system RAM usage. The equation used to determine the percentage usage of system RAM is : system_ram_usage = (((node_memory_MemTotal_bytes- node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100) the percentage is the stored in redis up to 2 decimal places. The alerts are based on thresholds, there are two types of thresholds depending on what node resides on the machine, a validator node has a lower threshold for alerting than a full node. These can be set inside `internal_config_main.ini`. 
+
+Default values:
+- `VD = validator_system_cpu_usage_danger_boundary = 80`
+- `VS = validator_system_cpu_usage_safe_boundary = 40`
+- `ND = node_system_cpu_usage_danger_boundary = 90`
+- `NS = node_system_cpu_usage_safe_boundary = 70`
+
+| Class | Severity | Configurable |
+|---|---|---|
+| `SystemRAMUsageIncreasedAlert` | `INFO` | X |
+| `SystemRAMUsageDecreasedAlert` | `INFO/CRITICAL` | X |
+| `SystemRAMUsageIncreasedInsideDangerRangeAlert` | `CRITICAL` | X |
+| `SystemRAMUsageIncreasedInsideWarningRangeAlert` | `WARNING` | X |
+
+#### System Storage Usage
+
+This metric is made up out of two other extracted metrics `node_filesystem_avail_bytes` and `node_filesystem_size_bytes` which are used to measure the percentage of system storage usage. The equation used to determine the percentage usage of system storage usage is : system_storage_usage = (100 - ((SUMOFALL(node_filesystem_avail_bytes) / SUMOFALL(node_filesystem_size_bytes)) * 100)) the percentage is the stored in redis up to 2 decimal places. The alerts are based on thresholds, there are two types of thresholds depending on what node resides on the machine, a validator node has a lower threshold for alerting than a full node. These can be set inside `internal_config_main.ini`. 
+
+Default values:
+- `VD = validator_system_storage_usage_danger_boundary = 80`
+- `VS = validator_system_storage_usage_safe_boundary = 40`
+- `ND = node_system_storage_usage_danger_boundary = 90`
+- `NS = node_system_storage_usage_safe_boundary = 70`
+
+| Class | Severity | Configurable |
+|---|---|---|
+| `SystemStorageUsageIncreasedAlert` | `INFO` | X |
+| `SystemStorageUsageDecreasedAlert` | `INFO/CRITICAL` | X |
+| `SystemStorageUsageIncreasedInsideDangerRangeAlert` | `CRITICAL` | X |
+| `SystemStorageUsageIncreasedInsideWarningRangeAlert` | `WARNING` | X |
 
 ### Twilio
 
@@ -462,7 +608,7 @@ If a repository's releases page is inaccessible during startup, a warning alert 
 
 If the periodic alive reminder is enabled from the config file, and PANIC is running smoothly, the operator is informed every time period that PANIC is still running via an info alert.
 
-The periodic alive reminder always uses the console and logger to raise this alert, however, the operator can also receive this alert via Telegram, Email or both, by modifying the config file as described [here](SETUP.md).
+The periodic alive reminder always uses the console and logger to raise this alert, however, the operator can also receive this alert via Telegram, Email or both, by modifying the config file as described [here](./SETUP_ALERTER.md).
 
 | Class | Severity | Configurable |
 |---|---|---|

@@ -1,5 +1,6 @@
-from configparser import ConfigParser
 from typing import Optional, List
+
+from configparser import ConfigParser
 
 from src.utils.config_parsers.internal_parsed import InternalConf
 from src.utils.config_parsers.user import RepoConfig
@@ -51,7 +52,6 @@ def get_repo(repos_so_far: List[RepoConfig]) -> Optional[RepoConfig]:
                     return None
                 else:
                     break
-
 
     # Return node
     return RepoConfig(repo_name, repo_page, True)

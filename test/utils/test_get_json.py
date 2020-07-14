@@ -12,7 +12,7 @@ LOGGER = logging.getLogger('dummy')
 ENDPOINT = 'the_endpoint'
 API_CALL = 'the_api_call'
 PARAMS = {'name': 'OASIS_NODE',
-          'consensus_public_key': 'the_address'}
+        'consensus_public_key': 'the_address'}
 RESULT = 'the_result'
 
 # @unittest.skip("Skipping Test Get JSON")
@@ -27,12 +27,12 @@ class TestGetJson(unittest.TestCase):
     @patch(GET_FUNCTION, return_value=DummyGetReturn())
     def test_get_json_accesses_content_and_parses_bytes_to_dict(self, _):
         self.assertEqual(TestGetJson.DummyGetReturn.CONTENT_DICT,
-                         get_json(ENDPOINT, LOGGER, PARAMS))
+                        get_json(ENDPOINT, LOGGER, PARAMS))
 
     @patch(GET_FUNCTION, return_value=DummyGetReturn())
     def test_get_json_with_no_params_works_just_the_same(self, _):
         self.assertEqual(TestGetJson.DummyGetReturn.CONTENT_DICT,
-                         get_json(ENDPOINT, LOGGER))
+                        get_json(ENDPOINT, LOGGER))
 
 # @unittest.skip("Skipping Test Get Oasis JSON")
 class TestGetOasisJson(unittest.TestCase):

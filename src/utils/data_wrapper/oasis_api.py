@@ -1,6 +1,5 @@
 import logging
 from datetime import timedelta
-from typing import Optional
 
 from src.alerts.alerts import ApiIsDownAlert, ApiIsUpAgainAlert
 from src.channels.channel import ChannelSet
@@ -51,7 +50,7 @@ class OasisApiWrapper:
 
         if self._api_down:
             channels.alert_info(ApiIsUpAgainAlert(monitor))
-        
+
         self._critical_alert_sent = False
         self._api_down = False
 
@@ -145,7 +144,8 @@ class OasisApiWrapper:
         return get_oasis_json(endpoint, params, self._logger)
 
     def get_block_header_height(self, api_url: str,
-                            node_name: str, height: str) -> OasisWrapperType:
+                                node_name: str,
+                                height: str) -> OasisWrapperType:
 
         endpoint = api_url + '/api/consensus/blockheader'
         params = {'name': node_name, 'height': height}
@@ -173,14 +173,14 @@ class OasisApiWrapper:
         return get_oasis_json(endpoint, params, self._logger)
 
     def get_staking_account(self, api_url: str, node_name: str,
-                                address: str) -> OasisWrapperType:
+                            address: str) -> OasisWrapperType:
 
         endpoint = api_url + '/api/staking/account'
         params = {'name': node_name, 'address': address}
         return get_oasis_json(endpoint, params, self._logger)
 
     def get_staking_address(self, api_url: str, public_key: \
-        str) -> OasisWrapperType:
+            str) -> OasisWrapperType:
 
         endpoint = api_url + '/api/staking/publickeytoaddress'
         params = {'pubKey': public_key}

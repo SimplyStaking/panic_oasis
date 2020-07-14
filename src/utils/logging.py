@@ -22,7 +22,7 @@ def create_logger(file: str, name: str, level: str, rotating: bool = False) \
 
     formatter = logging.Formatter(
         fmt='%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)s '
-        '- %(message)s',
+            '- %(message)s',
         datefmt='%d/%m/%Y %I:%M:%S %p')
 
     handler.setFormatter(formatter)

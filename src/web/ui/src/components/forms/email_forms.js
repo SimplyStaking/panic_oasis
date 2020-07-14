@@ -206,7 +206,6 @@ function EmailAlertsForm({
         <div>
           <Form.Control
             type="password"
-            placeholder=""
             disabled={(!toBool(mainUserConfigJson.email_alerts.enabled))
             || (fieldEmpty(mainUserConfigJson.email_alerts.user))}
             onChange={

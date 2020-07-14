@@ -64,7 +64,7 @@ function AddGitHubRepoForm({
             placement="right"
             tooltipText={'Any name which helps you identify the repo. '
           + 'Must be unique'}
-          component={<FontAwesomeIcon icon={faInfoCircle} />}
+            component={<FontAwesomeIcon icon={faInfoCircle} />}
           />
         </div>,
         2,
@@ -97,7 +97,7 @@ function AddGitHubRepoForm({
               </Form.Control.Feedback>
             )}
           <Form.Text className="text-muted">
-            Official GitHub repository. Format: oasislabs/oasis-core
+            Official GitHub repository. Format: oasislabs/oasis-core/
           </Form.Text>
         </div>,
         3,

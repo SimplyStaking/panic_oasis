@@ -10,7 +10,7 @@ function fetchData(url, params) {
 
 function pingNode(apiUrl, nodeName) {
   return sendData('/server/oasis_api_server/ping_node', {},
-    { apiUrl, nodeName, });
+    { apiUrl, nodeName });
 }
 
 function pingRepo(url) {
@@ -26,10 +26,6 @@ function pingMongoDB(host, port, user, pass) {
 function pingRedis(host, port, password) {
   return sendData('/server/ping_redis',
     {}, { host, port, password });
-}
-
-function pingAPIServer(endpoint) {
-  return sendData('/server/oasis_api_server/ping_api', {}, { endpoint });
 }
 
 function getChainNames() {
@@ -65,8 +61,20 @@ function sendConfig(file, config) {
   return sendData('/server/config', { file }, { config });
 }
 
+function authenticate(username, password) {
+  return sendData('/server/authenticate', {}, { username, password });
+}
+
+function getAuthenticationStatus() {
+  return fetchData('/server/get_authentication_status', {});
+}
+
+function terminateSession() {
+  return sendData('/server/terminate_session', {}, {});
+}
+
 export {
-  pingNode, sendData, fetchData, pingMongoDB, pingRedis, pingAPIServer,
-  getChainNames, getAllChainInfo, sendTestEmail, testCall, getAlerts,
-  getConfig, sendConfig, pingRepo,
+  pingNode, sendData, fetchData, pingMongoDB, pingRedis, getChainNames,
+  getAllChainInfo, sendTestEmail, testCall, getAlerts, getConfig, sendConfig,
+  pingRepo, authenticate, getAuthenticationStatus, terminateSession,
 };

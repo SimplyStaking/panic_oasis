@@ -10,6 +10,7 @@ from requests.exceptions import ConnectionError as ReqConnectionError, \
 from src.alerts.alerts import *
 from src.monitors.github import GitHubMonitor
 from src.monitors.node import NodeMonitor
+from src.monitors.system import SystemMonitor
 from src.utils.config_parsers.internal import InternalConfig
 from src.utils.config_parsers.internal_parsed import InternalConf
 from src.utils.exceptions import *
@@ -17,8 +18,7 @@ from src.utils.timing import TimedTaskLimiter
 
 
 def start_node_monitor(node_monitor: NodeMonitor, monitor_period: int,
-                    logger: logging.Logger):
-
+                       logger: logging.Logger):
     # Start
     while True:
         # Read node data
@@ -113,6 +113,27 @@ def start_node_monitor(node_monitor: NodeMonitor, monitor_period: int,
         if not node_monitor.is_catching_up():
             logger.debug('Sleeping for %s seconds.', monitor_period)
             time.sleep(monitor_period)
+
+
+def start_system_monitor(system_monitor: SystemMonitor, monitor_period: int,
+                         logger: logging.Logger):
+    # Start
+    while True:
+        # Read the system data
+        try:
+            logger.debug('Reading system data.')
+            system_monitor.monitor()
+            logger.debug('Done reading system data.')
+        except Exception as e:
+            logger.error(e)
+            raise e
+
+        system_monitor.save_state()
+        system_monitor.system.save_state(logger)
+
+        # Sleep
+        logger.debug('Sleeping for %s seconds.', monitor_period)
+        time.sleep(monitor_period)
 
 
 def start_github_monitor(github_monitor: GitHubMonitor, monitor_period: int,
