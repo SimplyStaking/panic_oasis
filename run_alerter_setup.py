@@ -1,7 +1,7 @@
 from configparser import ConfigParser
 
 from src.utils.setup import setup_user_config_main, setup_user_config_nodes, \
-    setup_user_config_repos
+    setup_user_config_repos, setup_env_file
 
 
 def run() -> None:
@@ -22,6 +22,9 @@ def run() -> None:
         with open('config/user_config_main.ini', 'w') as f:
             cp_main.write(f, space_around_delimiters=False)
         print('Saved config/user_config_main.ini\n')
+
+        setup_env_file.setup_env(cp_main)
+        print('Saved .env file\n')
 
         setup_user_config_nodes.setup_nodes(cp_nodes)
         with open('config/user_config_nodes.ini', 'w') as f:

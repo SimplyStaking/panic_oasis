@@ -1,5 +1,8 @@
 const ConfigParser = require('configparser');
 const path = require('path');
+const fs = require('fs');
+
+require('dotenv')
 
 const USER_CONFIG_MAIN = 'user_config_main.ini';
 const USER_CONFIG_NODES = 'user_config_nodes.ini';
@@ -54,5 +57,30 @@ module.exports = {
       });
 
     cp.write(getConfigPath(file));
+  },
+  
+  writeEnv: (data) => {
+
+    // Clears the current .env file
+    fs.truncate('.env', 0, function(){
+      console.log('Cleared .env file.')
+    })
+
+    var environmental = '';
+    
+    environmental =  environmental.concat(
+        `MONGO_HOST_PORT=${data.mongo.port}\n`,
+        `MONGO_INITDB_ROOT_USERNAME=${data.mongo.user}\n`,
+        `MONGO_INITDB_ROOT_PASSWORD=${data.mongo.pass}\n`,
+        `REDIS_HOST_PORT=${data.redis.port}\n`,
+        `REDIS_PASSWORD=${data.redis.password}\n`,
+        `UI_HOST_PORT=${process.env.PORT}\n`
+    );
+
+    fs.writeFile('.env', environmental, function (err) {
+      if (err) throw err;
+        console.log('Saved!');
+    });
+
   },
 };

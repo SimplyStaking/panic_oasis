@@ -37,7 +37,7 @@ git clone https://github.com/SimplyVC/panic_oasis
 cd panic_oasis
 ```
 
-The next step is to decide whether you want to run PANIC using [docker](#run-using-docker) or [from source](#running-from-source).
+The next step is to decide whether you want to run PANIC using [Docker](#run-using-docker) or [from source](#running-from-source).
 
 ### Running from Source
 
@@ -168,7 +168,7 @@ Check out `systemctl status panic_alerter` or the logs in `<PANIC_DIR>/logs/` to
 
 ### Run using Docker
 
-**Important:** If you are choosing to run PANIC using docker, then the Web UI, MongoDB and Redis must also run using Docker if you want to use them.
+**Important:** If you are choosing to run PANIC using Docker, then the Web UI, MongoDB and Redis must also run using Docker if you want to use them.
 
 To run PANIC using Docker, you will first need to install Docker along with Docker-Compose. You will then obtain the Docker images and run everything.
 
@@ -182,7 +182,7 @@ To install Docker and Docker Compose on your machine, follow [this guide](INSTAL
 
 Since you chose to run PANIC using Docker, it is important that if you are going to use MongoDB, it is also run inside a Docker container.
 
-To install MongoDB using docker please run the following command inside the project directory:
+To install MongoDB using Docker please run the following command inside the project directory:
 ```bash
 docker-compose up -d mongo
 ```
@@ -206,7 +206,7 @@ First start by setting up the UI as described [here](./SETUP_UI.md).
 
 ##### Obtaining Docker Image
 
-This part can be done in either of two ways, either by building the docker image yourself, or by downloading it from Docker Hub
+This part can be done in either of two ways, either by building the Docker image yourself, or by downloading it from Docker Hub
 
 **Option 1: Building The Docker Image**
 
@@ -219,7 +219,7 @@ docker-compose build ui
 
 The pre-built Docker image can simply be downloaded by running the following command:
 ```bash
-docker pull simplyvc/panic_oasis_ui:2.0.0
+docker pull simplyvc/panic_oasis_ui:2.0.1
 ```
 
 ##### Running the Docker Image
@@ -241,7 +241,7 @@ Having installed and executed the necessary components for PANIC, you can now pr
 
 ##### Obtaining Docker Image
 
-This part can be done in either of two ways, either by building the docker image yourself, or by downloading it from Docker Hub
+This part can be done in either of two ways, either by building the Docker image yourself, or by downloading it from Docker Hub
 
 **Option 1: Building The Docker Image**
 
@@ -254,7 +254,7 @@ docker-compose build alerter
 
 The pre-built Docker image can simply be downloaded by running the following command:
 ```bash
-docker pull simplyvc/panic_oasis:2.0.0
+docker pull simplyvc/panic_oasis:2.0.1
 ```
 
 ##### Running the Docker Image

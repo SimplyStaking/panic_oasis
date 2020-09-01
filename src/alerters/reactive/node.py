@@ -749,7 +749,7 @@ class Node:
             # such as when a validator is slashed
             if self._check_dict_path(event, 'escrow', 'take'):
                 if event['escrow']['take']['owner'] == self.entity_public_key:
-                    tokens = event['escrow']['take']['tokens']
+                    tokens = event['escrow']['take']['amount']
 
                     logger.debug('%s Node %s Slashed %s tokens at height %s',
                                  self, self.name, tokens, event_height)
@@ -760,7 +760,7 @@ class Node:
             # validator.
             elif self._check_dict_path(event, 'escrow', 'add'):
                 if event['escrow']['add']['owner'] == self.entity_public_key:
-                    tokens = event['escrow']['add']['tokens']
+                    tokens = event['escrow']['add']['amount']
                     escrow = event['escrow']['add']['escrow']
 
                     logger.debug('%s Node %s : Added %s tokens at height %s to '
@@ -770,7 +770,7 @@ class Node:
                         self.name, tokens, event_height, escrow))
 
                 elif event['escrow']['add']['escrow'] == self.entity_public_key:
-                    tokens = event['escrow']['add']['tokens']
+                    tokens = event['escrow']['add']['amount']
                     owner = event['escrow']['add']['owner']
 
                     logger.debug('%s Node %s : Added %s tokens at height %s to '
@@ -784,7 +784,7 @@ class Node:
             elif self._check_dict_path(event, 'escrow', 'reclaim'):
                 if event['escrow']['reclaim']['owner'] == \
                         self.entity_public_key:
-                    tokens = event['escrow']['reclaim']['tokens']
+                    tokens = event['escrow']['reclaim']['amount']
                     escrow = event['escrow']['reclaim']['escrow']
 
                     logger.debug('%s Node %s : reclaimed %s tokens at height %s'
@@ -795,7 +795,7 @@ class Node:
 
                 elif event['escrow']['reclaim']['escrow'] == \
                         self.entity_public_key:
-                    tokens = event['escrow']['reclaim']['tokens']
+                    tokens = event['escrow']['reclaim']['amount']
                     owner = event['escrow']['reclaim']['owner']
 
                     logger.debug('%s Node %s : reclaimed %s tokens at height %s'
@@ -807,7 +807,7 @@ class Node:
         # Burn events occur when a user decides to destroy their own tokens.
         elif self._check_dict_path(event, 'burn'):
             if event['burn']['owner'] == self.entity_public_key:
-                tokens = event['burn']['tokens']
+                tokens = event['burn']['amount']
 
                 logger.debug('%s Node %s Burned %s tokens at height %s', self,
                              self.name, tokens, event_height)
@@ -820,7 +820,7 @@ class Node:
         # address.
         elif self._check_dict_path(event, 'transfer'):
             if event['transfer']['from'] == self.entity_public_key:
-                tokens = event['transfer']['tokens']
+                tokens = event['transfer']['amount']
                 destination = event['transfer']['to']
 
                 logger.debug('%s Node %s transfered %s tokens at height %s ' +
@@ -833,7 +833,7 @@ class Node:
                     destination))
 
             elif event['transfer']['to'] == self.entity_public_key:
-                tokens = event['transfer']['tokens']
+                tokens = event['transfer']['amount']
                 source = event['transfer']['from']
 
                 logger.debug('%s Node %s transfered %s tokens at height %s ' +

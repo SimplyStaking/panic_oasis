@@ -42,6 +42,8 @@ The programmatic setup process is guided by instructions which we highly recomme
 
 Lastly, note that if you wish to change some configurations and run the setup process again, it will detect the config files and will not simply overwrite the current configurations.
 
+**Authentication Note:** If you are running PANIC through Docker and authentication is not set for Mongo and Redis then it will default to the authentication details found in the `.env` file.
+
 **IMPORTANT NOTE:** The alerter is not able to detect changes in the config files. Therefore, do not forget to restart the alerter after updating the config files. If you are using docker and the alerter container has already been created, you must restart the alerter container using the following command, otherwise, the changes would not be detected:
 
 ```bash

@@ -98,10 +98,10 @@ def get_node(nodes_so_far: List[NodeConfig],
     if node_is_validator:
         while True:
             node_public_key = input('Node\'s public identifier, found inside '
-                            'the file identity_pub.pem within the folder '
-                            '"/serverdir/node/", found on the machine '
+                            'the file entity.json within the key-value pair '
+                            '"nodes":"NODE_PUBLIC_KEY", found on the machine '
                             'running the node (typically the format is  : '
-                            'sBSEoqIYpE1pWksyk/Zx7xJ4rCv/ZWMTV/yDsUqlsJs=) : ')
+                            'J4i/ADAze7jYjcmPZvTFHD/tMa3wt9AMeaQALPXZebs=) : ')
 
             if not node_public_key.strip():
                 if not yn_prompt('You cannot leave the node_public_key '

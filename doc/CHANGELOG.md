@@ -1,6 +1,16 @@
 # Change Log
 
-## Unreleased
+## 2.0.1
+
+### Improvements
+
+* (Installation Guide) Updated the front page so that it includes the Docker installation guide, facilitating the guide significantly.
+* (Security) Updated the docker-compose.yml file to have mandatory login credentials for MongoDB and Redis. The login credentials can either be inputted by editing the .env file manually, using the CLI setup script, or the UI.
+* (UI Server) The UI server now requires authentication to get data from any endpoint.
+
+## 2.0.0
+
+Released on 14th July 2020
 
 ### Improvements
 * (UI)

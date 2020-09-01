@@ -194,8 +194,8 @@ function MongoForm({
             onChange={
               event => handleChangeInNonBooleanField(event, 'mongo', 'user')
             }
-            value={mainUserConfigJson.mongo.user}
-            isValid={validated && toBool(mainUserConfigJson.mongo.enabled)}
+              value={mainUserConfigJson.mongo.user}
+              isValid={validated && toBool(mainUserConfigJson.mongo.enabled)}
           />
           <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
         </div>,
@@ -230,7 +230,7 @@ function MongoForm({
             }
             value={mainUserConfigJson.mongo.pass}
             isValid={validated && toBool(mainUserConfigJson.mongo.enabled)
-            && !(fieldEmpty(mainUserConfigJson.mongo.user))}
+              && !(fieldEmpty(mainUserConfigJson.mongo.user))}
           />
           <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
         </div>,

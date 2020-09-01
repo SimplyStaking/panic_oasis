@@ -29,8 +29,8 @@ function MainUserConfig({
   twilioPhoneNumberValid, twilioPhoneNumbersToDialValid, twilioAlertsFormValid,
   mongoHostValid, mongoPortValid, mongoDBNameValid, PARIntervalSecValid,
   telegramCommandsBotTokenValid, telegramCommandsChatIdValid, redisHostValid,
-  redisPortValid, redisFormValid,
-  mongoFormValid, handleChangeInNonBooleanField, handleChangeInBooleanField,
+  redisPortValid, redisFormValid, mongoFormValid, handleChangeInNonBooleanField,
+  handleChangeInBooleanField,
 }) {
   return (
     <div>

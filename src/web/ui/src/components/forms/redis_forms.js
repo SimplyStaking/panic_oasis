@@ -141,7 +141,6 @@ function RedisForm({
               event => handleChangeInNonBooleanField(event, 'redis', 'password')
             }
             value={mainUserConfigJson.redis.password}
-            isValid={validated && toBool(mainUserConfigJson.redis.enabled)}
           />
           <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
         </div>,
@@ -153,8 +152,8 @@ function RedisForm({
           <TooltipOverlay
             identifier="Redis-password"
             placement="right"
-            tooltipText={'Redis authentication password. Leave blank if no '
-            + 'authentication was set up.'}
+            tooltipText={'Redis authentication password. For security reasons '
+            + ' this is not optional.'}
             component={<FontAwesomeIcon icon={faInfoCircle} />}
           />
         </div>,

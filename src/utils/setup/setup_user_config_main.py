@@ -333,6 +333,8 @@ def setup_redis(cp: ConfigParser) -> None:
         port = input('Please insert the Redis host port: (default: 6379)\n')
         port = '6379' if port == '' else port
 
+        print('Note if you are going to be running PANIC in docker, this is '
+              'mandatory.')
         password = input('Please insert the Redis password:\n')
 
         if yn_prompt('Do you wish to test Redis now? (Y/n)\n'):
@@ -347,7 +349,6 @@ def setup_redis(cp: ConfigParser) -> None:
     cp['redis']['host'] = host
     cp['redis']['port'] = port
     cp['redis']['password'] = password
-
 
 def setup_mongo(cp: ConfigParser) -> None:
     print('==== MongoDB')
@@ -394,7 +395,9 @@ def setup_mongo(cp: ConfigParser) -> None:
                 print('Database name cannot contain spaces.')
             else:
                 break
-
+        
+        print('Note if you are going to be running PANIC in docker, this is '
+            'mandatory.')
         username = input('Please insert the username for authentication '
                          '(blank for no authentication):\n')
         if len(username) != 0:
