@@ -2,6 +2,8 @@
 
 ## 2.0.1
 
+Released on 1st September 2020
+
 ### Improvements
 
 * (Installation Guide) Updated the front page so that it includes the Docker installation guide, facilitating the guide significantly.
