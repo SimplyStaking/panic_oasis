@@ -20,8 +20,8 @@ We will guide you through the steps required to get PANIC up and running. We rec
 
 - **Required**: The [Oasis API Server](https://github.com/SimplyVC/oasis_api_server) installed and running on each machine that you will monitor.
 - **Optional**: [Node Exporter](doc/INSTALL_NODE_EXPORTER.md), this will be used to monitor the systems on which nodes the are running. It should be installed on each machine that you want to monitor.
-- **Optional**: Telegram account and bots, for Telegram alerts and commands. [Click here](INSTALL_TELEGRAM.md) if you want to set it up.
-- **Optional**: Twilio account, for highly effective phone call alerts. [Click here](INSTALL_TWILIO.md) if you want to set it up.
+- **Optional**: Telegram account and bots, for Telegram alerts and commands. [Click here](doc/INSTALL_TELEGRAM.md) if you want to set it up.
+- **Optional**: Twilio account, for highly effective phone call alerts. [Click here](doc/INSTALL_TWILIO.md) if you want to set it up.
 - **Required**: This installation guide uses Docker and Docker Compose to run PANIC, these will need to be installed.
 
 ### Installation
