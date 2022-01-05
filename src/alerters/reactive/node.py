@@ -849,8 +849,8 @@ class Node:
                          event)
             channels.alert_warning(UnknownEventFound(
                 self.name,
-                event,
-                event_height))
+                event_height,
+                event))
 
     def disconnect_from_api(self, channels: ChannelSet, logger: logging.Logger):
         logger.debug('%s disconnect_from_api: channels=%s', self, channels)
