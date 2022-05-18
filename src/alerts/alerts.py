@@ -71,6 +71,7 @@ class AlertCode(Enum):
     EscrowAddEventSelfEscrow = _next_id(),
     EscrowReclaimEventSelfOwner = _next_id(),
     EscrowReclaimEventSelfEscrow = _next_id(),
+    AllowanceChangeAlert = _next_id(),
     UnknownEventFound = _next_id(),
     DebondingBalanceIncreasedAlert = _next_id(),
     DebondingBalanceDecreasedAlert = _next_id(),
@@ -700,6 +701,14 @@ class SharesBalanceDecreasedByAlert(Alert):
             '{} total shares balance DECREASED by {} from {} to {}.'.format(
                 node, change, old_balance, new_balance))
 
+class AllowanceChangeAlert(Alert):
+
+    def __init__(self, node: str, amount_change: float, reduced: bool, beneficiary: str, new_allowance: str, height: int) \
+            -> None:        
+        super().__init__(
+            AlertCode.AllowanceChangeAlert,
+            '{} allowance changed by {}.  Reduction: {}. New allowance: {}. Beneficiary: {}. Height: {}'.format(
+                node, amount_change, reduced, new_allowance, beneficiary, height))
 
 class NewProcessCPUSecondsTotalAlert(Alert):
 

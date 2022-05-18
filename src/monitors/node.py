@@ -143,7 +143,7 @@ class NodeMonitor(Monitor):
             key_alive = Keys.get_node_monitor_alive(self.monitor_name)
 
             self.logger.debug(
-                'Saving node monitor state: %s=%s', self._monitor_name,
+                'Saving node monitor state: %s=%s, _last_height_checked=%s', self._monitor_name,
                 key_lh, self._last_height_checked)
 
             # Set last height checked key
