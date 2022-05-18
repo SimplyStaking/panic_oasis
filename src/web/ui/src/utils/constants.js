@@ -71,6 +71,7 @@ const ALERTS_CONFIG_ALERT_NAMES = {
   EscrowAddEventSelfEscrow: 'Escrow add event when self is escrow',
   EscrowReclaimEventSelfOwner: 'Escrow reclaim event when self is owner',
   EscrowReclaimEventSelfEscrow: 'Escrow reclaim event when self is escrow',
+  AllowanceChangeAlert: 'Change of token allowance given to paratime',
   UnknownEventFound: 'Unknown event has been found',
   NodeFinalizedBlockHeightDidNotChangeInAlert: 'Finalized height not updating',
   NodeFinalizedBlockHeightHasNowBeenUpdatedAlert: 'Finalized height updated',

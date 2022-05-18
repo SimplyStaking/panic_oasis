@@ -290,7 +290,7 @@ class Node:
                 '_debonding_balance=%s, _shares_balance=%s, _is_syncing=%s, '
                 '_no_of_peers=%s, _active=%s, _no_of_blocks_missed=%s, '
                 '_time_of_last_height_change=%s, '
-                '_time_of_last_height_check_activity, '
+                '_time_of_last_height_check_activity=%s, '
                 '_finalized_block_height=%s, '
                 '_no_change_in_height_warning_sent=%s, '
                 '_is_missing_blocks=%s ',
@@ -312,7 +312,7 @@ class Node:
                 '_debonding_balance=%s, _shares_balance=%s, _is_syncing=%s, '
                 '_no_of_peers=%s, _active=%s, _no_of_blocks_missed=%s, '
                 '_time_of_last_height_change=%s, '
-                '_time_of_last_height_check_activity, '
+                '_time_of_last_height_check_activity=%s, '
                 '_finalized_block_height=%s, '
                 '_no_change_in_height_warning_sent=%s, '
                 '_is_missing_blocks=%s',
@@ -844,8 +844,25 @@ class Node:
                     tokens,
                     event_height,
                     source))
+
+        elif self._check_dict_path(event, 'allowance_change'):
+            if event['allowance_change']['owner'] == self.entity_public_key:
+                beneficiary = event['allowance_change']['beneficiary']
+                new_allowance = event['allowance_change']['allowance']
+                amount_change = event['allowance_change']['amount_change']
+                reduced = event['allowance_change']['negative']
+                            
+                logger.info('%s Node %s allowance_change %s tokens at height %s.  New allowance %s, reduced: %s, beneficiary: %s', 
+                              self, self.name, amount_change, event_height, new_allowance, reduced, beneficiary)
+                channels.alert_critical(AllowanceChangeAlert(
+                    self.name,
+                    amount_change,
+                    reduced,
+                    beneficiary,
+                    new_allowance,
+                    event_height))
         else:
-            logger.debug('%s Node received unknown event : %s', self, self.name,
+            logger.debug('%s Node %s received unknown event : %s', self, self.name,
                          event)
             channels.alert_warning(UnknownEventFound(
                 self.name,

@@ -84,7 +84,7 @@ class SystemMonitor(Monitor):
 
             process_memory_usage = float("{:.2f}".format(process_memory_usage))
 
-            self._logger.debug('%s process_memory_usage: %s%', self.system,
+            self._logger.debug('%s process_memory_usage: %s', self.system,
                                process_memory_usage)
 
             self.system.set_process_memory_usage(process_memory_usage, \
@@ -111,7 +111,7 @@ class SystemMonitor(Monitor):
             open_file_descriptors = float("{:.2f}".format( \
                 open_file_descriptors))
 
-            self._logger.debug('%s open_file_descriptors: %s%', self.system,
+            self._logger.debug('%s open_file_descriptors: %s', self.system,
                                open_file_descriptors)
 
             self.system.set_open_file_descriptors(open_file_descriptors, \
@@ -134,7 +134,7 @@ class SystemMonitor(Monitor):
 
             system_cpu_usage = float("{:.2f}".format(system_cpu_usage))
 
-            self._logger.debug('%s system_cpu_usage: %s%', self.system,
+            self._logger.debug('%s system_cpu_usage: %s', self.system,
                                system_cpu_usage)
 
             self.system.set_system_cpu_usage(system_cpu_usage, \
@@ -151,7 +151,7 @@ class SystemMonitor(Monitor):
 
             system_ram_usage = float("{:.2f}".format(system_ram_usage))
 
-            self._logger.debug('%s system_ram_usage: %s%', self.system,
+            self._logger.debug('%s system_ram_usage: %s', self.system,
                                system_ram_usage)
 
             self.system.set_system_ram_usage(system_ram_usage, \
@@ -178,7 +178,7 @@ class SystemMonitor(Monitor):
 
             system_storage_usage = float("{:.2f}".format(system_storage_usage))
 
-            self._logger.debug('%s system_storage_usage: %s%', self.system,
+            self._logger.debug('%s system_storage_usage: %s', self.system,
                                system_storage_usage)
 
             self.system.set_system_storage_usage(system_storage_usage, \
